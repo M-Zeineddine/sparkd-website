@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import SparkdLogo from "@/components/SparkdLogo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -42,12 +42,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex justify-center mb-10">
-          <Image
-            src="/logo.svg"
-            alt="Spark'd"
-            width={160}
-            height={52}
-            className="h-14 w-auto object-contain brightness-0 invert"
+          <SparkdLogo size="md" textColor="white"
           />
         </div>
 

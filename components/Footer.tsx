@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useLang } from "@/lib/i18n";
+import SparkdLogo from "@/components/SparkdLogo";
 
 export default function Footer() {
   const { t, isRTL } = useLang();
@@ -17,13 +17,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
           {/* Brand */}
           <div className="flex flex-col items-center md:items-start gap-3">
-            <Image
-              src="/logo.svg"
-              alt="Spark'd"
-              width={120}
-              height={40}
-              className="h-10 w-auto object-contain brightness-0 invert"
-            />
+            <SparkdLogo size="sm" textColor="white" />
             <p
               className="text-white/50 text-sm"
               style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}

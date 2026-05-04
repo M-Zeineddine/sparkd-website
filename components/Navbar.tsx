@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
+import SparkdLogo from "@/components/SparkdLogo";
 
 export default function Navbar() {
   const { t, toggleLang, isRTL } = useLang();
@@ -21,14 +21,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <Image
-            src="/logo.svg"
-            alt="Spark'd"
-            width={120}
-            height={40}
-            className="h-10 w-auto object-contain brightness-0 invert"
-            priority
-          />
+          <SparkdLogo size="sm" textColor="white" />
         </Link>
 
         {/* Desktop Nav */}

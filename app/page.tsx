@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { Product, CATEGORIES, CATEGORY_AR } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
+import SparkdLogo from "@/components/SparkdLogo";
 
 // Clean line-art SVG icons per collection — no emoji
 const COLLECTION_ICONS: Record<string, React.ReactNode> = {
@@ -135,14 +135,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: "#f95c05" }} />
 
         <div className="relative z-10 flex flex-col items-center text-center gap-6 max-w-3xl mx-auto animate-fade-in-up">
-          <Image
-            src="/logo.svg"
-            alt="Spark'd"
-            width={280}
-            height={90}
-            className="h-20 sm:h-28 w-auto object-contain brightness-0 invert"
-            priority
-          />
+          <SparkdLogo size="lg" textColor="white" />
 
           <h1
             className="text-[#f95c05] text-5xl sm:text-7xl md:text-8xl font-black leading-none"
