@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     items, total,
   } = body;
 
-  if (!first_name || !last_name || !email || !phone || !address || !city || !building_details) {
+  if (!first_name || !phone || !address || !city) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
