@@ -104,14 +104,27 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image */}
           <div className="relative aspect-square bg-[#f0ede8] overflow-hidden">
-            <Image
-              src={product.image_url}
-              alt={name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-[#bbb]">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="M21 15l-5-5L5 21" />
+                </svg>
+                <span className="text-xs uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                  Image Coming Soon
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Info */}

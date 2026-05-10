@@ -31,14 +31,29 @@ export default function ProductCard({ product }: Props) {
       <div className="bg-white border border-brand-gray hover:border-[#f95c05] transition-all duration-300 overflow-hidden">
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-[#f0ede8]">
-          <Image
-            src={product.image_url}
-            alt={name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+          {product.image_url ? (
+            <>
+              <Image
+                src={product.image_url}
+                alt={name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#bbb]">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+              <span className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                Coming Soon
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Info */}
