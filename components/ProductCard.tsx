@@ -30,11 +30,11 @@ export default function ProductCard({ product }: Props) {
     <Link href={`/shop/${product.id}`} className="group block">
       <div className="bg-white border border-brand-gray hover:border-[#f95c05] transition-all duration-300 overflow-hidden">
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-[#f0ede8]">
-          {product.image_url ? (
+        <div className="relative aspect-square overflow-hidden" style={{ background: "#fffdf9" }}>
+          {(product.image_urls?.[0] || product.image_url) ? (
             <>
               <Image
-                src={product.image_url}
+                src={product.image_urls?.[0] || product.image_url}
                 alt={name}
                 fill
                 className="object-contain group-hover:scale-105 transition-transform duration-500"

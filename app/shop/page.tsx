@@ -68,14 +68,15 @@ function SubcategoryShelf({
           <Link
             key={product.id}
             href={`/shop/${product.id}`}
-            className="group relative aspect-square overflow-hidden bg-[#e5e3de] block"
+            className="group relative aspect-square overflow-hidden block"
+            style={{ background: "#fffdf9" }}
           >
-            {product.image_url ? (
+            {(product.image_urls?.[0] || product.image_url) ? (
               <Image
-                src={product.image_url}
+                src={product.image_urls?.[0] || product.image_url}
                 alt={product.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="object-contain group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
               />
             ) : (

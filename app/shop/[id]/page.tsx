@@ -20,6 +20,7 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false);
   const [related, setRelated] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryRecord[]>([]);
+  const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -75,6 +76,8 @@ export default function ProductPage() {
   const description = lang === "ar" ? product.description_ar || product.description : product.description;
   const categoryRecord = categories.find((c) => c.name === product.category);
   const category = isRTL ? categoryRecord?.name_ar || product.category : product.category;
+  const images = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+  const currentImg = images[activeImg] || "";
 
   return (
     <div style={{ background: "#fffdf9" }} className="min-h-screen">
@@ -102,27 +105,47 @@ export default function ProductPage() {
       {/* Product Layout */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image */}
-          <div className="relative aspect-square bg-[#f0ede8] overflow-hidden">
-            {product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={name}
-                fill
-                className="object-contain"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-[#bbb]">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <path d="M21 15l-5-5L5 21" />
-                </svg>
-                <span className="text-xs uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
-                  Image Coming Soon
-                </span>
+          {/* Gallery */}
+          <div className="flex flex-col gap-3">
+            <div className="relative aspect-square overflow-hidden" style={{ background: "#fffdf9" }}>
+              {currentImg ? (
+                <Image
+                  src={currentImg}
+                  alt={name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-[#bbb]">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <path d="M21 15l-5-5L5 21" />
+                  </svg>
+                  <span className="text-xs uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                    Image Coming Soon
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {images.length > 1 && (
+              <div className="flex gap-2">
+                {images.map((src, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(i)}
+                    className="relative w-16 h-16 overflow-hidden shrink-0 transition-all"
+                    style={{
+                      background: "#fffdf9",
+                      border: `2px solid ${activeImg === i ? "#f95c05" : "#e5e3de"}`,
+                    }}
+                  >
+                    <Image src={src} alt={`View ${i + 1}`} fill className="object-contain" sizes="64px" />
+                  </button>
+                ))}
               </div>
             )}
           </div>

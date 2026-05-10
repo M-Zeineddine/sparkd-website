@@ -6,6 +6,7 @@ export interface Product {
   description_ar: string;
   price: number;
   image_url: string;
+  image_urls: string[];
   category: string;
   tags: string[];
   created_at: string;

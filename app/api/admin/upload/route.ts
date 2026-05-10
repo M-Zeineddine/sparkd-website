@@ -14,8 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop() || "jpg";
-  const fileName = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const fileName = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -23,7 +22,7 @@ export async function POST(req: NextRequest) {
   const { error } = await supabaseAdmin.storage
     .from("product-images")
     .upload(fileName, buffer, {
-      contentType: file.type,
+      contentType: "image/jpeg",
       upsert: false,
     });
 
