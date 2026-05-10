@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
-import { Product, CATEGORY_AR } from "@/lib/types";
+import { Product, CategoryRecord } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 
 export default function ProductPage() {
@@ -19,6 +19,13 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
   const [related, setRelated] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => setCategories(d.categories || []));
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -66,7 +73,8 @@ export default function ProductPage() {
 
   const name = lang === "ar" ? product.name_ar || product.name : product.name;
   const description = lang === "ar" ? product.description_ar || product.description : product.description;
-  const category = isRTL ? CATEGORY_AR[product.category] || product.category : product.category;
+  const categoryRecord = categories.find((c) => c.name === product.category);
+  const category = isRTL ? categoryRecord?.name_ar || product.category : product.category;
 
   return (
     <div style={{ background: "#fffdf9" }} className="min-h-screen">
