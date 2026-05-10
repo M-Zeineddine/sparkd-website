@@ -16,7 +16,7 @@ export const translations = {
 
     // Hero
     tagline: "Light It Your Way",
-    heroSubtitle: "Custom BIC J26 lighters, designed to match your vibe — shipped ready to spark.",
+    heroSubtitle: "Custom lighters, designed to match your vibe — shipped ready to spark.",
     shopNow: "Shop Now",
     exploreCollections: "Explore Collections",
 
@@ -86,7 +86,7 @@ export const translations = {
     step1Title: "Pick Your Design",
     step1Desc: "Browse 9 collections and find the lighter that speaks to you",
     step2Title: "We Build It",
-    step2Desc: "Your BIC J26 is wrapped, inspected, and packed with care",
+    step2Desc: "Your lighter is wrapped, inspected, and packed with care",
     step3Title: "Light It Your Way",
     step3Desc: "Delivered to your door, ready to spark right out of the box",
 
@@ -140,7 +140,7 @@ export const translations = {
 
     // Hero
     tagline: "أشعلها بطريقتك",
-    heroSubtitle: "ولاعات BIC J26 مخصصة، مصممة تبع ذوقك — توصل جاهزة تشتعل.",
+    heroSubtitle: "ولاعات مخصصة، مصممة تبع ذوقك — توصل جاهزة تشتعل.",
     shopNow: "تسوق الآن",
     exploreCollections: "استكشف المجموعات",
 
@@ -210,7 +210,7 @@ export const translations = {
     step1Title: "اختر تصميمك",
     step1Desc: "تصفح 9 مجموعات وجد الولاعة اللي تعبّر عنك",
     step2Title: "نحضّرها إلك",
-    step2Desc: "ولاعة BIC J26 تتسوّى وتتفحّص وتتحزم بعناية",
+    step2Desc: "ولاعتك تتسوّى وتتفحّص وتتحزم بعناية",
     step3Title: "أشعلها بطريقتك",
     step3Desc: "توصل عالباب جاهزة تنشتعل من أول لحظة",
 

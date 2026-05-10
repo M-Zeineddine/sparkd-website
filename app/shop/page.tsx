@@ -82,6 +82,16 @@ function SubcategoryShelf({
             ) : (
               <div className="w-full h-full flex items-center justify-center text-3xl">🔥</div>
             )}
+            {product.in_stock === false && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(180,180,180,0.55)" }}>
+                <span
+                  className="text-[10px] font-black uppercase tracking-widest px-2 py-1"
+                  style={{ background: "#111", color: "#fff", fontFamily: "var(--font-barlow-condensed)" }}
+                >
+                  Sold Out
+                </span>
+              </div>
+            )}
           </Link>
         ))}
 
@@ -231,12 +241,6 @@ function ShopContent() {
           >
             {t("shop")}
           </h1>
-          <p
-            className="text-white/50 mt-2 text-sm"
-            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-          >
-            {isRTL ? "ولاعات BIC J26 مخصصة بـ 5$ فقط" : "$5 per lighter · authentic BIC J26"}
-          </p>
         </div>
       </div>
 

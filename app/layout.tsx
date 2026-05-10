@@ -30,12 +30,12 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "Spark'd — Light It Your Way",
   description:
-    "Custom BIC J26 lighters designed your way. 9 unique collections — Lebanese, streetwear, aesthetic, and more. $5 each, delivered to your door.",
-  keywords: ["custom lighters", "BIC lighter", "custom BIC J26", "Lebanon", "streetwear", "lighter shop"],
+    "Custom lighters designed your way. Unique collections — Lebanese, streetwear, aesthetic, and more. Delivered to your door.",
+  keywords: ["custom lighters", "BIC lighter", "Lebanon", "streetwear", "lighter shop", "custom lighter wrap"],
   openGraph: {
     title: "Spark'd — Light It Your Way",
     description:
-      "Custom BIC J26 lighters designed your way. 9 unique collections, $5 each.",
+      "Custom lighters designed your way. Unique collections, delivered to your door.",
     url: "https://sparkd.online",
     siteName: "Spark'd",
     type: "website",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Spark'd — Light It Your Way",
-    description: "Custom BIC J26 lighters. 9 collections. $5 each.",
+    description: "Custom lighters. Unique collections. Delivered to your door.",
   },
   metadataBase: new URL("https://sparkd.online"),
 };
@@ -59,6 +59,12 @@ export default function RootLayout({
         style={{ background: "#fffdf9" }}
       >
         <LangProvider>
+          <div
+            className="w-full text-center py-2 px-4 text-xs font-bold tracking-widest uppercase"
+            style={{ background: "#f95c05", color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
+          >
+            🔥 Bundle Deal — 3 Large for $10
+          </div>
           <Navbar />
           <CartDrawer />
           <main>{children}</main>

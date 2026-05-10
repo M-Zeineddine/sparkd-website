@@ -84,18 +84,15 @@ export default function CartDrawer() {
             </div>
           ) : (
             <ul className="flex flex-col gap-4">
-              {items.map(({ product, quantity }) => {
+              {items.map(({ cartKey, product, size, quantity }) => {
                 const name = product.name;
+                const imgSrc = product.image_urls?.[0] || product.image_url;
                 return (
-                  <li key={product.id} className="flex gap-3 pb-4 border-b border-[#e5e3de]">
-                    <div className="relative w-20 h-20 shrink-0 bg-[#f0ede8] overflow-hidden">
-                      <Image
-                        src={product.image_url}
-                        alt={name}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
+                  <li key={cartKey} className="flex gap-3 pb-4 border-b border-[#e5e3de]">
+                    <div className="relative w-20 h-20 shrink-0 overflow-hidden" style={{ background: "#fffdf9" }}>
+                      {imgSrc && (
+                        <Image src={imgSrc} alt={name} fill className="object-contain" sizes="80px" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p
@@ -104,30 +101,32 @@ export default function CartDrawer() {
                       >
                         {name}
                       </p>
-                      <p
-                        className="text-[#f95c05] text-sm font-bold mt-0.5"
-                        style={{ fontFamily: "var(--font-barlow-condensed)" }}
-                      >
-                        ${(product.price * quantity).toFixed(2)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[#f95c05] text-sm font-bold" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                          ${(size.price * quantity).toFixed(2)}
+                        </p>
+                        <span className="text-xs text-[#999] uppercase tracking-wide" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                          · {size.label}
+                        </span>
+                      </div>
 
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => updateQuantity(product.id, quantity - 1)}
+                          onClick={() => updateQuantity(cartKey, quantity - 1)}
                           className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
                         >
                           −
                         </button>
                         <span className="text-sm font-semibold min-w-[20px] text-center">{quantity}</span>
                         <button
-                          onClick={() => updateQuantity(product.id, quantity + 1)}
+                          onClick={() => updateQuantity(cartKey, quantity + 1)}
                           className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
                         >
                           +
                         </button>
                         <button
-                          onClick={() => removeItem(product.id)}
+                          onClick={() => removeItem(cartKey)}
                           className="ml-auto text-[#999] hover:text-red-500 transition-colors"
                           aria-label="Remove"
                         >

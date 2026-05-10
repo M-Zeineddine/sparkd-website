@@ -136,12 +136,6 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div
-            className="mt-1 px-5 py-2 border border-white/15 text-white/40 text-xs tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-barlow-condensed)" }}
-          >
-            {isRTL ? "فقط 5$ للولاعة" : "only $5 per lighter · BIC J26"}
-          </div>
         </div>
 
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce opacity-30">
@@ -152,37 +146,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section className="py-20 px-4 border-b border-[#e5e3de]">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center text-3xl sm:text-4xl font-black mb-16" style={{ ...headingStyle, color: "#111111" }}>
-            {t("howItWorks")}
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 sm:gap-8 relative">
-            <div className="hidden sm:block absolute top-10 left-1/6 right-1/6 h-px" style={{ background: "#e5e3de", zIndex: 0 }} />
-
-            {[
-              { key: "pick", icon: STEP_ICONS.pick, step: "01", title: t("step1Title"), desc: t("step1Desc") },
-              { key: "build", icon: STEP_ICONS.build, step: "02", title: t("step2Title"), desc: t("step2Desc") },
-              { key: "light", icon: STEP_ICONS.light, step: "03", title: t("step3Title"), desc: t("step3Desc") },
-            ].map(({ key, icon, step, title, desc }) => (
-              <div key={key} className="relative z-10 flex flex-col items-center text-center gap-4">
-                <div className="w-20 h-20 flex items-center justify-center border-2 text-[#f95c05]" style={{ borderColor: "#f95c05", background: "#fffdf9" }}>
-                  {icon}
-                </div>
-                <span className="text-xs tracking-[0.2em] uppercase" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-                  {step}
-                </span>
-                <h3 className="text-xl font-black" style={{ ...headingStyle, color: "#111111" }}>{title}</h3>
-                <p className="text-sm text-[#777] leading-relaxed max-w-[220px]" style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}>
-                  {desc}
-                </p>
-              </div>
-            ))}
+      {/* ── Bundle Deal ── */}
+      <section className="py-16 px-4 border-t border-[#e5e3de]" style={{ background: "#fffdf9" }}>
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col gap-3">
+            <span
+              className="text-xs tracking-[0.2em] uppercase font-bold"
+              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
+            >
+              Limited Offer
+            </span>
+            <h2
+              className="text-5xl sm:text-7xl font-black leading-none"
+              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#111111", textTransform: "uppercase" }}
+            >
+              3 Large
+              <br />
+              <span style={{ color: "#f95c05" }}>for $10</span>
+            </h2>
+            <p
+              className="text-[#777] text-sm max-w-xs leading-relaxed"
+              style={{ fontFamily: "var(--font-barlow)" }}
+            >
+              Pick any 3 Large lighters from our collection and get them bundled at a special price.
+            </p>
           </div>
+          <Link href="/shop?size=L">
+            <button className="btn-primary px-10 py-4 text-base shrink-0">
+              Shop the Bundle
+            </button>
+          </Link>
         </div>
       </section>
+
 
       {/* ── Collections ── */}
       <section className="py-20 px-4 border-b border-[#e5e3de]">
@@ -267,7 +263,7 @@ export default function HomePage() {
             {isRTL ? "ولاعتك، أسلوبك" : "Your Lighter. Your Style."}
           </h2>
           <p className="text-white/50 text-base sm:text-lg max-w-sm leading-relaxed" style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}>
-            {isRTL ? "BIC J26 الأصلية. تصاميم حصرية. توصيل لعندك." : "Authentic BIC J26. Exclusive designs. Delivered to your door."}
+            {isRTL ? "تصاميم حصرية. توصيل لعندك." : "Exclusive designs. Delivered to your door."}
           </p>
           <Link href="/shop">
             <button className="btn-primary px-10 py-4 text-base mt-2">{t("shopNow")}</button>

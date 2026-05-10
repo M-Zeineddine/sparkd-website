@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Product, CategoryRecord, SubcategoryRecord } from "@/lib/types";
+import { Product, CategoryRecord, SubcategoryRecord, ProductSize } from "@/lib/types";
+import { DEFAULT_SIZES, mergeSizes } from "@/lib/constants";
 
 interface ProductForm {
   name: string;
@@ -15,6 +16,8 @@ interface ProductForm {
   category: string;
   subcategory: string;
   image_urls: string[];
+  in_stock: boolean;
+  sizes: ProductSize[];
 }
 
 const emptyForm: ProductForm = {
@@ -26,6 +29,8 @@ const emptyForm: ProductForm = {
   category: "",
   subcategory: "",
   image_urls: [],
+  in_stock: true,
+  sizes: DEFAULT_SIZES,
 };
 
 export default function AdminProducts() {
@@ -88,6 +93,8 @@ export default function AdminProducts() {
       category: p.category,
       subcategory: existingSubcategory,
       image_urls: urls,
+      in_stock: p.in_stock !== false,
+      sizes: mergeSizes(p.sizes),
     });
     setShowForm(true);
   };
@@ -170,24 +177,26 @@ export default function AdminProducts() {
         name_ar: form.name_ar,
         description: form.description,
         description_ar: form.description_ar,
-        price: parseFloat(form.price) || 5,
+        price: form.sizes.find((s) => s.available)?.price ?? (parseFloat(form.price) || 5),
         category: form.category,
         tags: form.subcategory ? [form.subcategory] : [],
         image_url: cleanUrls[0] || "",
         image_urls: cleanUrls,
+        in_stock: form.in_stock,
+        sizes: form.sizes,
       };
 
       const res = editingId
         ? await fetch(`/api/products/${editingId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", "x-admin": "true" },
-            body: JSON.stringify(body),
-          })
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-admin": "true" },
+          body: JSON.stringify(body),
+        })
         : await fetch("/api/products", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-admin": "true" },
-            body: JSON.stringify(body),
-          });
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-admin": "true" },
+          body: JSON.stringify(body),
+        });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed");
@@ -306,10 +315,22 @@ export default function AdminProducts() {
                   >
                     {p.name}
                   </p>
-                  <p className="text-[#f95c05] text-xs font-bold mt-0.5" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
-                    ${p.price} · {p.category}
-                    {p.tags?.[0] && <span className="text-white/40"> / {p.tags[0]}</span>}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[#f95c05] text-xs font-bold" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                      ${p.price} · {p.category}
+                      {p.tags?.[0] && <span className="text-white/40"> / {p.tags[0]}</span>}
+                    </p>
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5"
+                      style={{
+                        fontFamily: "var(--font-barlow-condensed)",
+                        background: p.in_stock !== false ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+                        color: p.in_stock !== false ? "#22c55e" : "#ef4444",
+                      }}
+                    >
+                      {p.in_stock !== false ? "In Stock" : "Sold Out"}
+                    </span>
+                  </div>
                   <div className="flex gap-2 mt-3">
                     <button
                       onClick={() => openEdit(p)}
@@ -494,6 +515,73 @@ export default function AdminProducts() {
                   })}
                 </div>
               </div>
+            </div>
+
+            {/* Sizes */}
+            <div className="border-t border-white/10 pt-4 mt-2">
+              <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Sizes & Prices</label>
+              <div className="flex flex-col gap-2">
+                {form.sizes.map((s, idx) => (
+                  <div key={s.size} className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => {
+                        const sizes = [...f.sizes];
+                        sizes[idx] = { ...sizes[idx], available: !sizes[idx].available };
+                        return { ...f, sizes };
+                      })}
+                      className="w-20 py-1.5 text-xs font-black uppercase tracking-wider border transition-all shrink-0"
+                      style={{
+                        fontFamily: "var(--font-barlow-condensed)",
+                        background: s.available ? "rgba(34,197,94,0.1)" : "transparent",
+                        borderColor: s.available ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.1)",
+                        color: s.available ? "#22c55e" : "rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                    <div className="flex items-center gap-1 flex-1">
+                      <span className="text-white/30 text-xs" style={{ fontFamily: "var(--font-barlow-condensed)" }}>$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className={inputCls}
+                        value={s.price}
+                        onChange={(e) => setForm((f) => {
+                          const sizes = [...f.sizes];
+                          sizes[idx] = { ...sizes[idx], price: parseFloat(e.target.value) || 0 };
+                          return { ...f, sizes };
+                        })}
+                        style={{ fontFamily: "var(--font-barlow)" }}
+                      />
+                    </div>
+                    <span className="text-white/20 text-[10px] uppercase tracking-widest w-16 text-right" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                      {s.available ? "on" : "off"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between py-4 border-t border-white/10 mt-2">
+              <span className="text-xs uppercase tracking-widest text-white/40" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                Availability
+              </span>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, in_stock: !f.in_stock }))}
+                className="flex items-center gap-2 px-3 py-1.5 border transition-all text-xs font-bold uppercase tracking-wider"
+                style={{
+                  fontFamily: "var(--font-barlow-condensed)",
+                  background: form.in_stock ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+                  borderColor: form.in_stock ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)",
+                  color: form.in_stock ? "#22c55e" : "#ef4444",
+                }}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ background: form.in_stock ? "#22c55e" : "#ef4444" }} />
+                {form.in_stock ? "In Stock" : "Sold Out"}
+              </button>
             </div>
 
             <div className="flex gap-3 mt-6">

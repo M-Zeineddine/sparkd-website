@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
-import { Product, CategoryRecord } from "@/lib/types";
+import { Product, CategoryRecord, ProductSize } from "@/lib/types";
+import { mergeSizes } from "@/lib/constants";
 import ProductCard from "@/components/ProductCard";
 
 export default function ProductPage() {
@@ -21,6 +22,7 @@ export default function ProductPage() {
   const [related, setRelated] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryRecord[]>([]);
   const [activeImg, setActiveImg] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -37,6 +39,9 @@ export default function ProductPage() {
       })
       .then((data) => {
         setProduct(data.product);
+        const productSizes = mergeSizes(data.product?.sizes);
+        const firstAvailable = productSizes.find((s: ProductSize) => s.available) ?? productSizes[0];
+        setSelectedSize(firstAvailable);
         setLoading(false);
         // Fetch related
         if (data.product?.category) {
@@ -56,8 +61,8 @@ export default function ProductPage() {
   }, [id, router]);
 
   const handleAdd = () => {
-    if (!product) return;
-    addItem(product);
+    if (!product || !selectedSize) return;
+    addItem(product, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -77,6 +82,7 @@ export default function ProductPage() {
   const categoryRecord = categories.find((c) => c.name === product.category);
   const category = isRTL ? categoryRecord?.name_ar || product.category : product.category;
   const images = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+  const sizes = mergeSizes(product.sizes);
   const currentImg = images[activeImg] || "";
 
   return (
@@ -184,14 +190,45 @@ export default function ProductPage() {
                 className="text-3xl font-black"
                 style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
               >
-                $5.00
+                ${Number(selectedSize?.price ?? product.price).toFixed(2)}
               </span>
               <span
-                className="text-xs uppercase tracking-widest text-[#999]"
-                style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                className="text-xs uppercase tracking-widest font-bold"
+                style={{
+                  fontFamily: "var(--font-barlow-condensed)",
+                  color: product.in_stock !== false ? "#22c55e" : "#ef4444",
+                }}
               >
-                {t("inStock")}
+                {product.in_stock !== false ? t("inStock") : (isRTL ? "نفذت الكمية" : "Sold Out")}
               </span>
+            </div>
+
+            {/* Size Selector */}
+            <div>
+                <p className="text-xs uppercase tracking-widest text-[#999] mb-2" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                  Size
+                </p>
+                <div className="flex gap-2">
+                  {sizes.map((s) => (
+                    <button
+                      key={s.size}
+                      disabled={!s.available}
+                      onClick={() => setSelectedSize(s)}
+                      className="w-16 py-2 text-sm font-black uppercase tracking-wider border transition-all"
+                      style={{
+                        fontFamily: "var(--font-barlow-condensed)",
+                        background: selectedSize?.size === s.size ? "#111" : "transparent",
+                        color: selectedSize?.size === s.size ? "#fff" : s.available ? "#111" : "#ccc",
+                        borderColor: selectedSize?.size === s.size ? "#111" : s.available ? "#ccc" : "#e5e3de",
+                        cursor: s.available ? "pointer" : "not-allowed",
+                        textDecoration: !s.available ? "line-through" : "none",
+                        opacity: s.available ? 1 : 0.4,
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
             </div>
 
             {/* Description */}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
 import SparkdLogo from "@/components/SparkdLogo";
@@ -9,9 +9,12 @@ import SparkdLogo from "@/components/SparkdLogo";
 export default function Navbar() {
   const { t, toggleLang, isRTL } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const totalItems = useCartStore((s) => s.totalItems);
   const toggleCart = useCartStore((s) => s.toggleCart);
   const count = totalItems();
+
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <header
@@ -65,7 +68,7 @@ export default function Navbar() {
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 01-8 0" />
             </svg>
-            {count > 0 && (
+            {mounted && count > 0 && (
               <span
                 className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-bold"
                 style={{ background: "#f95c05" }}

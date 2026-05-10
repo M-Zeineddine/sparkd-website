@@ -1,3 +1,10 @@
+export interface ProductSize {
+  size: "S" | "M" | "L";
+  label: string;
+  price: number;
+  available: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -7,13 +14,17 @@ export interface Product {
   price: number;
   image_url: string;
   image_urls: string[];
+  in_stock: boolean;
+  sizes: ProductSize[];
   category: string;
   tags: string[];
   created_at: string;
 }
 
 export interface CartItem {
+  cartKey: string;
   product: Product;
+  size: ProductSize;
   quantity: number;
 }
 

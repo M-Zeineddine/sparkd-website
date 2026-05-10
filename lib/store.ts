@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CartItem, Product } from "./types";
+import { CartItem, Product, ProductSize } from "./types";
 
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Product) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, size: ProductSize) => void;
+  removeItem: (cartKey: string) => void;
+  updateQuantity: (cartKey: string, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -22,37 +22,39 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
-      addItem: (product) => {
+      addItem: (product, size) => {
+        const cartKey = `${product.id}-${size.size}`;
         set((state) => {
-          const existing = state.items.find((i) => i.product.id === product.id);
+          const existing = state.items.find((i) => i.cartKey === cartKey);
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.product.id === product.id
-                  ? { ...i, quantity: i.quantity + 1 }
-                  : i
+                i.cartKey === cartKey ? { ...i, quantity: i.quantity + 1 } : i
               ),
               isOpen: true,
             };
           }
-          return { items: [...state.items, { product, quantity: 1 }], isOpen: true };
+          return {
+            items: [...state.items, { cartKey, product, size, quantity: 1 }],
+            isOpen: true,
+          };
         });
       },
 
-      removeItem: (productId) => {
+      removeItem: (cartKey) => {
         set((state) => ({
-          items: state.items.filter((i) => i.product.id !== productId),
+          items: state.items.filter((i) => i.cartKey !== cartKey),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (cartKey, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(cartKey);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.product.id === productId ? { ...i, quantity } : i
+            i.cartKey === cartKey ? { ...i, quantity } : i
           ),
         }));
       },
@@ -64,7 +66,7 @@ export const useCartStore = create<CartStore>()(
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       totalPrice: () =>
-        get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
+        get().items.reduce((sum, i) => sum + i.size.price * i.quantity, 0),
     }),
     {
       name: "sparkd-cart",
