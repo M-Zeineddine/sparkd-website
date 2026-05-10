@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLang } from "@/lib/i18n";
-import { Product, CATEGORIES, CATEGORY_AR } from "@/lib/types";
+import { Product, CATEGORIES, CATEGORY_AR, CATEGORY_TREE, SUBCATEGORY_AR } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 
 function ShopContent() {
@@ -12,46 +12,42 @@ function ShopContent() {
   const router = useRouter();
 
   const categoryParam = searchParams.get("category") || "";
-  const tagParam = searchParams.get("tag") || "";
+  const subParam = searchParams.get("tag") || "";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(categoryParam);
-  const [activeTag, setActiveTag] = useState(tagParam);
-  const [allTags, setAllTags] = useState<string[]>([]);
+  const [activeSubcategory, setActiveSubcategory] = useState(subParam);
+
+  const subcategories = activeCategory ? (CATEGORY_TREE[activeCategory] ?? []) : [];
 
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCategory) params.set("category", activeCategory);
-    if (activeTag) params.set("tag", activeTag);
+    if (activeSubcategory) params.set("tag", activeSubcategory);
 
     fetch(`/api/products?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
-        const prods: Product[] = data.products || [];
-        setProducts(prods);
-        const tags = Array.from(
-          new Set(prods.flatMap((p) => p.tags || []))
-        ).sort();
-        setAllTags(tags);
+        setProducts(data.products || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [activeCategory, activeTag]);
+  }, [activeCategory, activeSubcategory]);
 
   const handleCategory = (cat: string) => {
     const next = activeCategory === cat ? "" : cat;
     setActiveCategory(next);
-    setActiveTag("");
+    setActiveSubcategory("");
     const p = new URLSearchParams();
     if (next) p.set("category", next);
     router.replace(`/shop?${p.toString()}`, { scroll: false });
   };
 
-  const handleTag = (tag: string) => {
-    const next = activeTag === tag ? "" : tag;
-    setActiveTag(next);
+  const handleSubcategory = (slug: string) => {
+    const next = activeSubcategory === slug ? "" : slug;
+    setActiveSubcategory(next);
     const p = new URLSearchParams();
     if (activeCategory) p.set("category", activeCategory);
     if (next) p.set("tag", next);
@@ -86,7 +82,7 @@ function ShopContent() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Category Pills */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-3">
           <button
             onClick={() => handleCategory("")}
             className="px-4 py-1.5 text-xs font-bold tracking-widest transition-all duration-150"
@@ -118,25 +114,29 @@ function ShopContent() {
           ))}
         </div>
 
-        {/* Tag Pills (if tags available) */}
-        {allTags.length > 0 && (
+        {/* Subcategory Pills */}
+        {subcategories.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8 pb-6 border-b border-[#e5e3de]">
-            {allTags.map((tag) => (
+            {subcategories.map(({ label, slug }) => (
               <button
-                key={tag}
-                onClick={() => handleTag(tag)}
-                className="px-3 py-1 text-xs transition-all duration-150"
+                key={slug}
+                onClick={() => handleSubcategory(slug)}
+                className="px-3 py-1 text-xs font-semibold transition-all duration-150"
                 style={{
                   fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)",
-                  background: activeTag === tag ? "#111111" : "#f0ede8",
-                  color: activeTag === tag ? "#fffdf9" : "#666666",
+                  background: activeSubcategory === slug ? "#111111" : "#f0ede8",
+                  color: activeSubcategory === slug ? "#fffdf9" : "#444444",
                   borderRadius: "2px",
                 }}
               >
-                #{tag}
+                {isRTL ? SUBCATEGORY_AR[slug] || label : label}
               </button>
             ))}
           </div>
+        )}
+
+        {subcategories.length === 0 && activeCategory && (
+          <div className="mb-8 pb-6 border-b border-[#e5e3de]" />
         )}
 
         {/* Results count */}
@@ -148,10 +148,19 @@ function ShopContent() {
             {isRTL ? `${products.length} منتج` : `${products.length} wraps`}
             {activeCategory && (
               <span>
-                {" "}
-                {isRTL ? "في" : "in"}{" "}
+                {" "}{isRTL ? "في" : "in"}{" "}
                 <span className="text-[#f95c05] font-semibold">
                   {isRTL ? CATEGORY_AR[activeCategory] || activeCategory : activeCategory}
+                </span>
+              </span>
+            )}
+            {activeSubcategory && (
+              <span>
+                {" "}·{" "}
+                <span className="text-[#f95c05] font-semibold">
+                  {isRTL
+                    ? SUBCATEGORY_AR[activeSubcategory] || activeSubcategory
+                    : subcategories.find((s) => s.slug === activeSubcategory)?.label || activeSubcategory}
                 </span>
               </span>
             )}
@@ -179,7 +188,7 @@ function ShopContent() {
               {isRTL ? "لا توجد منتجات" : "No wraps found"}
             </p>
             <button
-              onClick={() => { setActiveCategory(""); setActiveTag(""); router.replace("/shop"); }}
+              onClick={() => { setActiveCategory(""); setActiveSubcategory(""); router.replace("/shop"); }}
               className="btn-outline text-sm"
             >
               {t("allCollections")}

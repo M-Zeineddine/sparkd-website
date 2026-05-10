@@ -35,28 +35,55 @@ export interface Order {
   created_at: string;
 }
 
-export const CATEGORIES = [
-  "Lebanese & Cultural",
-  "Aesthetic & Visual",
-  "Girly & Cute",
-  "Manly",
-  "Sporty",
-  "Personality & Lifestyle",
-  "LGBTQ+",
-  "Weird & Wild",
-  "Custom & Personalized",
-] as const;
+export interface SubcategoryInfo {
+  label: string;
+  slug: string;
+}
 
-export type Category = (typeof CATEGORIES)[number];
+export const CATEGORY_TREE: Record<string, SubcategoryInfo[]> = {
+  "Anime & Manga": [
+    { label: "Attack on Titan", slug: "attack-on-titan" },
+    { label: "Naruto", slug: "naruto" },
+    { label: "Hunter x Hunter", slug: "hunter-x-hunter" },
+  ],
+  "Characters": [
+    { label: "Pokemon", slug: "pokemon" },
+    { label: "Sanrio", slug: "sanrio" },
+    { label: "Cartoons", slug: "cartoons" },
+  ],
+  "Lebanese & Arabic": [
+    { label: "Lebanese Culture", slug: "lebanese-culture" },
+    { label: "Arabic Typography", slug: "arabic-typography" },
+  ],
+  "Hip-Hop": [],
+  "Dark & Streetwear": [],
+  "Aesthetic": [],
+  "Cats": [],
+};
+
+export const CATEGORIES = Object.keys(CATEGORY_TREE);
 
 export const CATEGORY_AR: Record<string, string> = {
-  "Lebanese & Cultural": "لبناني وثقافي",
-  "Aesthetic & Visual": "جمالي وبصري",
-  "Girly & Cute": "بنتاوي ولطيف",
-  Manly: "رجالي",
-  Sporty: "رياضي",
-  "Personality & Lifestyle": "شخصية وأسلوب حياة",
-  "LGBTQ+": "مجتمع الميم+",
-  "Weird & Wild": "غريب وجامح",
-  "Custom & Personalized": "مخصص وشخصي",
+  "Anime & Manga": "أنمي ومانغا",
+  "Characters": "شخصيات",
+  "Lebanese & Arabic": "لبناني وعربي",
+  "Hip-Hop": "هيب هوب",
+  "Dark & Streetwear": "داكن وستريتوير",
+  "Aesthetic": "أيستيتيك",
+  "Cats": "قطط",
 };
+
+export const SUBCATEGORY_AR: Record<string, string> = {
+  "attack-on-titan": "هجوم العمالقة",
+  "naruto": "ناروتو",
+  "hunter-x-hunter": "هانتر × هانتر",
+  "pokemon": "بوكيمون",
+  "sanrio": "سانريو",
+  "cartoons": "كرتون",
+  "lebanese-culture": "الثقافة اللبنانية",
+  "arabic-typography": "الخط العربي",
+};
+
+export const ALL_SUBCATEGORY_SLUGS = new Set(
+  Object.values(CATEGORY_TREE).flatMap((subs) => subs.map((s) => s.slug))
+);

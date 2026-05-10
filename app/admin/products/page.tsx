@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Product, CATEGORIES } from "@/lib/types";
+import { Product, CATEGORIES, CATEGORY_TREE, ALL_SUBCATEGORY_SLUGS } from "@/lib/types";
 
 interface ProductForm {
   name: string;
@@ -13,7 +13,7 @@ interface ProductForm {
   description_ar: string;
   price: string;
   category: string;
-  tags: string;
+  subcategory: string;
   image_url: string;
 }
 
@@ -24,7 +24,7 @@ const emptyForm: ProductForm = {
   description_ar: "",
   price: "5",
   category: CATEGORIES[0],
-  tags: "",
+  subcategory: "",
   image_url: "",
 };
 
@@ -40,6 +40,8 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const subcategories = CATEGORY_TREE[form.category] ?? [];
 
   useEffect(() => {
     fetch("/api/products", { headers: { "x-admin": "true" } })
@@ -62,6 +64,7 @@ export default function AdminProducts() {
 
   const openEdit = (p: Product) => {
     setEditingId(p.id);
+    const existingSubcategory = (p.tags || []).find((t) => ALL_SUBCATEGORY_SLUGS.has(t)) || "";
     setForm({
       name: p.name,
       name_ar: p.name_ar || "",
@@ -69,10 +72,14 @@ export default function AdminProducts() {
       description_ar: p.description_ar || "",
       price: String(p.price),
       category: p.category,
-      tags: (p.tags || []).join(", "),
+      subcategory: existingSubcategory,
       image_url: p.image_url || "",
     });
     setShowForm(true);
+  };
+
+  const handleCategoryChange = (cat: string) => {
+    setForm((f) => ({ ...f, category: cat, subcategory: "" }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +110,7 @@ export default function AdminProducts() {
         description_ar: form.description_ar,
         price: parseFloat(form.price) || 5,
         category: form.category,
-        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: form.subcategory ? [form.subcategory] : [],
         image_url: form.image_url,
       };
 
@@ -230,6 +237,7 @@ export default function AdminProducts() {
                   </p>
                   <p className="text-[#f95c05] text-xs font-bold mt-0.5" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                     ${p.price} · {p.category}
+                    {p.tags?.[0] && <span className="text-white/40"> / {p.tags[0]}</span>}
                   </p>
                   <div className="flex gap-2 mt-3">
                     <button
@@ -295,14 +303,28 @@ export default function AdminProducts() {
               </div>
               <div>
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Category *</label>
-                <select className={inputCls} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{ fontFamily: "var(--font-barlow)" }}>
+                <select className={inputCls} value={form.category} onChange={(e) => handleCategoryChange(e.target.value)} style={{ fontFamily: "var(--font-barlow)" }}>
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Tags (comma separated)</label>
-                <input className={inputCls} value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="flag, cedar, culture" style={{ fontFamily: "var(--font-barlow)" }} />
-              </div>
+
+              {subcategories.length > 0 && (
+                <div className="sm:col-span-2">
+                  <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Subcategory</label>
+                  <select
+                    className={inputCls}
+                    value={form.subcategory}
+                    onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
+                    style={{ fontFamily: "var(--font-barlow)" }}
+                  >
+                    <option value="">— None —</option>
+                    {subcategories.map(({ label, slug }) => (
+                      <option key={slug} value={slug}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="sm:col-span-2">
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Image</label>
                 <div className="flex gap-3 items-start">
