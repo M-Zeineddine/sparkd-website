@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Protect admin routes (dashboard, products) but not the login page
   if (
     pathname.startsWith("/admin/dashboard") ||
-    pathname.startsWith("/admin/products")
+    pathname.startsWith("/admin/products") ||
+    pathname.startsWith("/admin/categories")
   ) {
     const session = req.cookies.get("admin_session")?.value;
     const expectedToken = process.env.ADMIN_SESSION_TOKEN;
@@ -20,5 +20,12 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/dashboard", "/admin/dashboard/:path*", "/admin/products", "/admin/products/:path*"],
+  matcher: [
+    "/admin/dashboard",
+    "/admin/dashboard/:path*",
+    "/admin/products",
+    "/admin/products/:path*",
+    "/admin/categories",
+    "/admin/categories/:path*",
+  ],
 };
