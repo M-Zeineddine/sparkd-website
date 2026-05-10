@@ -1,5 +1,11 @@
 import { ProductSize } from "@/lib/types";
 
+import { City } from "country-state-city";
+
+export const LEBANESE_CITIES: string[] = City.getCitiesOfCountry("LB")!
+  .map((c) => c.name)
+  .sort();
+
 export const DEFAULT_SIZES: ProductSize[] = [
   { size: "S", label: "Small",  price: 3,   available: false },
   { size: "M", label: "Medium", price: 3.5, available: false },

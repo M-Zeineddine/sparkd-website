@@ -127,29 +127,32 @@ export default function HomePage() {
       </section>
 
       {/* ── Bundle Deal ── */}
-      <section className="py-16 px-4 border-t border-[#e5e3de]" style={{ background: "#fffdf9" }}>
+      <section className="py-16 px-4" style={{ background: "#fffdf9", borderTop: "4px solid #f95c05" }}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-8">
-          <div className="flex flex-col gap-3">
-            <span
-              className="text-xs tracking-[0.2em] uppercase font-bold"
-              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
-            >
-              Limited Offer
-            </span>
-            <h2
-              className="text-5xl sm:text-7xl font-black leading-none"
-              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#111111", textTransform: "uppercase" }}
-            >
-              3 Large
-              <br />
-              <span style={{ color: "#f95c05" }}>for $10</span>
-            </h2>
-            <p
-              className="text-[#777] text-sm max-w-xs leading-relaxed"
-              style={{ fontFamily: "var(--font-barlow)" }}
-            >
-              Pick any 3 Large lighters from our collection and get them bundled at a special price.
-            </p>
+          <div className="flex gap-5 items-stretch">
+            <div className="w-1.5 shrink-0 rounded-full" style={{ background: "#f95c05" }} />
+            <div className="flex flex-col gap-3">
+              <span
+                className="text-xs tracking-[0.2em] uppercase font-bold"
+                style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
+              >
+                Limited Offer
+              </span>
+              <h2
+                className="text-6xl sm:text-8xl font-black leading-none"
+                style={{ fontFamily: "var(--font-barlow-condensed)", color: "#111111", textTransform: "uppercase" }}
+              >
+                3 Large
+                <br />
+                <span style={{ color: "#f95c05" }}>for $10</span>
+              </h2>
+              <p
+                className="text-[#777] text-sm max-w-xs leading-relaxed"
+                style={{ fontFamily: "var(--font-barlow)" }}
+              >
+                Pick any 3 Large lighters from our collection and get them bundled at a special price.
+              </p>
+            </div>
           </div>
           <Link href="/shop?size=L">
             <button className="btn-primary px-10 py-4 text-base shrink-0">
@@ -161,7 +164,7 @@ export default function HomePage() {
 
 
       {/* ── Collections ── */}
-      <section className="py-20 px-4 border-b border-[#e5e3de]">
+      <section className="py-10 px-4 border-b border-[#e5e3de]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-black mb-10" style={{ ...headingStyle, color: "#111111" }}>
             {t("collections")}

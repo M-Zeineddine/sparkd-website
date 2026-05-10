@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Order, OrderStatus, Product } from "@/lib/types";
+import { LEBANESE_CITIES } from "@/lib/constants";
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: "#f59e0b",
@@ -168,6 +169,7 @@ export default function AdminDashboard() {
       day: "2-digit", month: "short", year: "numeric",
     });
 
+
   const th = "text-xs uppercase tracking-widest text-white/50 px-4 py-3 text-left whitespace-nowrap";
 
   const inputStyle = {
@@ -215,6 +217,13 @@ export default function AdminDashboard() {
             >
               Categories
             </Link>
+            <Link
+              href="/admin/analytics"
+              className="text-white/50 hover:text-white text-sm uppercase tracking-wider transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Analytics
+            </Link>
           </nav>
         </div>
         <button
@@ -243,6 +252,7 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
 
         <div className="flex items-center justify-between mb-4">
           <h2
@@ -469,13 +479,17 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <label className={labelClass} style={{ fontFamily: "var(--font-barlow-condensed)" }}>City *</label>
-                  <input
+                  <select
                     value={form.city}
                     onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
                     className="w-full px-3 py-2 text-sm"
-                    style={inputStyle}
-                    placeholder="Beirut"
-                  />
+                    style={{ ...inputStyle, cursor: "pointer" }}
+                  >
+                    <option value="" disabled>— Select city —</option>
+                    {LEBANESE_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

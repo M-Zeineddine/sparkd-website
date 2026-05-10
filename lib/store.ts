@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CartItem, Product, ProductSize } from "./types";
+import { DEFAULT_SIZES } from "./constants";
+
+function currentPrice(size: ProductSize): number {
+  return DEFAULT_SIZES.find((s) => s.size === size.size)?.price ?? size.price;
+}
 
 interface CartStore {
   items: CartItem[];
@@ -66,7 +71,7 @@ export const useCartStore = create<CartStore>()(
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       totalPrice: () =>
-        get().items.reduce((sum, i) => sum + i.size.price * i.quantity, 0),
+        get().items.reduce((sum, i) => sum + currentPrice(i.size) * i.quantity, 0),
     }),
     {
       name: "sparkd-cart",

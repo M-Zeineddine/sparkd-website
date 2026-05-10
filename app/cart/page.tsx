@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
+import { DEFAULT_SIZES } from "@/lib/constants";
 
 export default function CartPage() {
   const { t, isRTL } = useLang();
@@ -48,11 +49,12 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Items */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              {items.map(({ product, quantity }) => {
+              {items.map(({ cartKey, product, size, quantity }) => {
                 const name = product.name;
+                const unitPrice = DEFAULT_SIZES.find((s) => s.size === size.size)?.price ?? size.price;
                 return (
                   <div
-                    key={product.id}
+                    key={cartKey}
                     className="flex gap-4 p-4 border border-[#e5e3de] hover:border-[#f95c05] transition-colors"
                   >
                     <Link href={`/shop/${product.id}`} className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 bg-[#f0ede8] overflow-hidden">
@@ -78,30 +80,30 @@ export default function CartPage() {
                         className="text-[#f95c05] font-bold"
                         style={{ fontFamily: "var(--font-barlow-condensed)", letterSpacing: "0.04em" }}
                       >
-                        ${(product.price * quantity).toFixed(2)}
+                        ${(unitPrice * quantity).toFixed(2)}
                         <span className="text-[#999] font-normal text-xs ml-1">
-                          (${product.price.toFixed(2)} ea.)
+                          (${unitPrice.toFixed(2)} ea.)
                         </span>
                       </p>
 
                       <div className="flex items-center gap-3 mt-auto">
                         <div className="flex items-center border border-[#e5e3de]">
                           <button
-                            onClick={() => updateQuantity(product.id, quantity - 1)}
+                            onClick={() => updateQuantity(cartKey, quantity - 1)}
                             className="w-8 h-8 flex items-center justify-center text-lg hover:bg-[#f0ede8] transition-colors"
                           >
                             −
                           </button>
                           <span className="w-10 text-center text-sm font-bold">{quantity}</span>
                           <button
-                            onClick={() => updateQuantity(product.id, quantity + 1)}
+                            onClick={() => updateQuantity(cartKey, quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center text-lg hover:bg-[#f0ede8] transition-colors"
                           >
                             +
                           </button>
                         </div>
                         <button
-                          onClick={() => removeItem(product.id)}
+                          onClick={() => removeItem(cartKey)}
                           className="text-xs text-[#999] hover:text-red-500 transition-colors flex items-center gap-1"
                           style={fontBody}
                         >
@@ -138,16 +140,19 @@ export default function CartPage() {
                 </h2>
 
                 <div className="flex flex-col gap-3 mb-6">
-                  {items.map(({ product, quantity }) => (
-                    <div key={product.id} className="flex justify-between text-sm" style={fontBody}>
-                      <span className="text-[#666] truncate mr-2">
-                        {product.name} × {quantity}
-                      </span>
-                      <span className="font-semibold shrink-0">
-                        ${(product.price * quantity).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                  {items.map(({ cartKey, product, size, quantity }) => {
+                    const unitPrice = DEFAULT_SIZES.find((s) => s.size === size.size)?.price ?? size.price;
+                    return (
+                      <div key={cartKey} className="flex justify-between text-sm" style={fontBody}>
+                        <span className="text-[#666] truncate mr-2">
+                          {product.name} × {quantity}
+                        </span>
+                        <span className="font-semibold shrink-0">
+                          ${(unitPrice * quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="border-t border-[#e5e3de] pt-4 flex justify-between items-center mb-6">

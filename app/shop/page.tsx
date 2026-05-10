@@ -230,20 +230,6 @@ function ShopContent() {
 
   return (
     <div className="min-h-screen" style={{ background: "#fffdf9" }}>
-      <div className="py-12 px-4 border-b border-[#e5e3de]" style={{ background: "#111111" }}>
-        <div className="max-w-7xl mx-auto">
-          <h1
-            className="text-4xl sm:text-5xl font-black text-white"
-            style={{
-              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
-              textTransform: isRTL ? "none" : "uppercase",
-            }}
-          >
-            {t("shop")}
-          </h1>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Category pills */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -349,7 +335,7 @@ function ShopContent() {
                 className="text-sm text-[#999] mb-6"
                 style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
               >
-                {isRTL ? `${products.length} منتج` : `${products.length} wraps`}
+                {isRTL ? `${products.length} تصميم` : `${products.length} designs`}
               </p>
             )}
             {products.length === 0 ? (
@@ -384,7 +370,7 @@ function EmptyState({ isRTL, onReset, allLabel }: { isRTL: boolean; onReset: () 
           color: "#111111",
         }}
       >
-        {isRTL ? "لا توجد منتجات" : "No wraps found"}
+        {isRTL ? "لا توجد تصاميم" : "No designs found"}
       </p>
       <button onClick={onReset} className="btn-outline text-sm">{allLabel}</button>
     </div>

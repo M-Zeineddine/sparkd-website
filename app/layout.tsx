@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   title: "Spark'd — Light It Your Way",
   description:
     "Custom lighters designed your way. Unique collections — Lebanese, streetwear, aesthetic, and more. Delivered to your door.",
-  keywords: ["custom lighters", "BIC lighter", "Lebanon", "streetwear", "lighter shop", "custom lighter wrap"],
+  keywords: ["custom lighters", "BIC lighter", "Lebanon", "streetwear", "lighter shop", "custom lighter"],
   openGraph: {
     title: "Spark'd — Light It Your Way",
     description:
@@ -60,10 +60,10 @@ export default function RootLayout({
       >
         <LangProvider>
           <div
-            className="w-full text-center py-2 px-4 text-xs font-bold tracking-widest uppercase"
+            className="w-full text-center py-2.5 px-4 text-base font-bold tracking-wide uppercase"
             style={{ background: "#f95c05", color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
           >
-            🔥 Bundle Deal — 3 Large for $10
+            🔥 Bundle Deal 3 — Large for $10
           </div>
           <Navbar />
           <CartDrawer />

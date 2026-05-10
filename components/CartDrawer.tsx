@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/lib/store";
 import { useLang } from "@/lib/i18n";
+import { DEFAULT_SIZES } from "@/lib/constants";
 
 export default function CartDrawer() {
   const { t, isRTL } = useLang();
@@ -103,7 +104,7 @@ export default function CartDrawer() {
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[#f95c05] text-sm font-bold" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
-                          ${(size.price * quantity).toFixed(2)}
+                          ${((DEFAULT_SIZES.find((s) => s.size === size.size)?.price ?? size.price) * quantity).toFixed(2)}
                         </p>
                         <span className="text-xs text-[#999] uppercase tracking-wide" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                           · {size.label}

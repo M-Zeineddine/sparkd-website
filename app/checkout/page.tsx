@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
+import { DEFAULT_SIZES, LEBANESE_CITIES } from "@/lib/constants";
 
 interface FormData {
   firstName: string;
@@ -221,13 +222,16 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label style={labelStyle}>{t("city")} *</label>
-                  <input
-                    type="text"
+                  <select
                     value={form.city}
                     onChange={(e) => { setForm({ ...form, city: e.target.value }); setErrors({ ...errors, city: "" }); }}
-                    style={{ ...inputStyle, borderColor: errors.city ? "#ef4444" : "#e5e3de" }}
-                    placeholder={isRTL ? "بيروت" : "Beirut"}
-                  />
+                    style={{ ...inputStyle, borderColor: errors.city ? "#ef4444" : "#e5e3de", cursor: "pointer" }}
+                  >
+                    <option value="" disabled>{isRTL ? "اختر مدينة" : "Select a city"}</option>
+                    {LEBANESE_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                   {errors.city && <span className="text-red-500 text-xs" style={fontBody}>{errors.city}</span>}
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -277,8 +281,8 @@ export default function CheckoutPage() {
                 </h2>
 
                 <div className="flex flex-col gap-3 mb-4">
-                  {items.map(({ product, quantity }) => (
-                    <div key={product.id} className="flex gap-3 items-start">
+                  {items.map(({ cartKey, product, size, quantity }) => (
+                    <div key={cartKey} className="flex gap-3 items-start">
                       <div className="relative w-14 h-14 shrink-0 bg-[#f0ede8] overflow-hidden">
                         <Image
                           src={product.image_url}
@@ -295,7 +299,7 @@ export default function CheckoutPage() {
                         <p className="text-xs text-[#999] mt-0.5" style={fontBody}>× {quantity}</p>
                       </div>
                       <span className="text-sm font-bold shrink-0" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-                        ${(product.price * quantity).toFixed(2)}
+                        ${((DEFAULT_SIZES.find((s) => s.size === size.size)?.price ?? size.price) * quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}

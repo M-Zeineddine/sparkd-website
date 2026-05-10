@@ -10,8 +10,6 @@ import { DEFAULT_SIZES, mergeSizes } from "@/lib/constants";
 interface ProductForm {
   name: string;
   name_ar: string;
-  description: string;
-  description_ar: string;
   price: string;
   category: string;
   subcategory: string;
@@ -23,8 +21,6 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "",
   name_ar: "",
-  description: "",
-  description_ar: "",
   price: "5",
   category: "",
   subcategory: "",
@@ -87,8 +83,6 @@ export default function AdminProducts() {
     setForm({
       name: p.name,
       name_ar: p.name_ar || "",
-      description: p.description || "",
-      description_ar: p.description_ar || "",
       price: String(p.price),
       category: p.category,
       subcategory: existingSubcategory,
@@ -175,8 +169,6 @@ export default function AdminProducts() {
       const body = {
         name: form.name,
         name_ar: form.name_ar,
-        description: form.description,
-        description_ar: form.description_ar,
         price: form.sizes.find((s) => s.available)?.price ?? (parseFloat(form.price) || 5),
         category: form.category,
         tags: form.subcategory ? [form.subcategory] : [],
@@ -375,19 +367,11 @@ export default function AdminProducts() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Name (EN) *</label>
-                <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Cedar Wrap" style={{ fontFamily: "var(--font-barlow)" }} />
+                <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Cedar Lighter" style={{ fontFamily: "var(--font-barlow)" }} />
               </div>
               <div>
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Name (AR)</label>
                 <input className={inputCls} value={form.name_ar} onChange={(e) => setForm({ ...form, name_ar: e.target.value })} placeholder="ملصق الأرز" dir="rtl" style={{ fontFamily: "var(--font-cairo)" }} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Description (EN)</label>
-                <textarea className={inputCls} rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ resize: "vertical", fontFamily: "var(--font-barlow)" }} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Description (AR)</label>
-                <textarea className={inputCls} rows={2} value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" style={{ resize: "vertical", fontFamily: "var(--font-cairo)" }} />
               </div>
               <div>
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Price ($)</label>

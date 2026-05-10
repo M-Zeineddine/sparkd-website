@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
 import { Product, CategoryRecord, ProductSize } from "@/lib/types";
-import { mergeSizes } from "@/lib/constants";
+import { mergeSizes, DEFAULT_SIZES } from "@/lib/constants";
 import ProductCard from "@/components/ProductCard";
 
 export default function ProductPage() {
@@ -78,12 +78,10 @@ export default function ProductPage() {
   if (!product) return null;
 
   const name = lang === "ar" ? product.name_ar || product.name : product.name;
-  const description = lang === "ar" ? product.description_ar || product.description : product.description;
   const categoryRecord = categories.find((c) => c.name === product.category);
   const category = isRTL ? categoryRecord?.name_ar || product.category : product.category;
   const images = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
   const sizes = mergeSizes(product.sizes);
-  const currentImg = images[activeImg] || "";
 
   return (
     <div style={{ background: "#fffdf9" }} className="min-h-screen">
@@ -113,16 +111,79 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Gallery */}
           <div className="flex flex-col gap-3">
+            {/* Slider */}
             <div className="relative aspect-square overflow-hidden" style={{ background: "#fffdf9" }}>
-              {currentImg ? (
-                <Image
-                  src={currentImg}
-                  alt={name}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                />
+              {images.length > 0 ? (
+                <>
+                  {/* Sliding track */}
+                  <div
+                    className="flex h-full"
+                    style={{
+                      width: `${images.length * 100}%`,
+                      transform: `translateX(-${(activeImg * 100) / images.length}%)`,
+                      transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
+                    }}
+                  >
+                    {images.map((src, i) => (
+                      <div key={i} className="relative h-full shrink-0" style={{ width: `${100 / images.length}%` }}>
+                        <Image
+                          src={src}
+                          alt={`${name} ${i + 1}`}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          priority={i === 0}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Arrows */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setActiveImg(Math.max(0, activeImg - 1))}
+                        disabled={activeImg === 0}
+                        aria-label="Previous image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 disabled:opacity-0 disabled:pointer-events-none"
+                        style={{ background: "rgba(17,17,17,0.55)", backdropFilter: "blur(4px)" }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setActiveImg(Math.min(images.length - 1, activeImg + 1))}
+                        disabled={activeImg === images.length - 1}
+                        aria-label="Next image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 disabled:opacity-0 disabled:pointer-events-none"
+                        style={{ background: "rgba(17,17,17,0.55)", backdropFilter: "blur(4px)" }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Dot indicators */}
+                  {images.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {images.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImg(i)}
+                          className="rounded-full transition-all duration-200"
+                          style={{
+                            width: i === activeImg ? "20px" : "6px",
+                            height: "6px",
+                            background: i === activeImg ? "#f95c05" : "rgba(17,17,17,0.3)",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-[#bbb]">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
@@ -190,7 +251,7 @@ export default function ProductPage() {
                 className="text-3xl font-black"
                 style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
               >
-                ${Number(selectedSize?.price ?? product.price).toFixed(2)}
+                ${Number(DEFAULT_SIZES.find((s) => s.size === selectedSize?.size)?.price ?? selectedSize?.price).toFixed(2)}
               </span>
               <span
                 className="text-xs uppercase tracking-widest font-bold"
@@ -231,26 +292,6 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* Description */}
-            {description && (
-              <div>
-                <h3
-                  className="text-sm uppercase tracking-widest font-bold mb-2 text-[#999]"
-                  style={{
-                    fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
-                    textTransform: isRTL ? "none" : "uppercase",
-                  }}
-                >
-                  {t("productDescription")}
-                </h3>
-                <p
-                  className="text-[#444] leading-relaxed"
-                  style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                >
-                  {description}
-                </p>
-              </div>
-            )}
 
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (
