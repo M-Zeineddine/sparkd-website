@@ -5,14 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "@/lib/i18n";
-import {
-  Product,
-  CATEGORIES,
-  CATEGORY_AR,
-  CATEGORY_TREE,
-  SUBCATEGORY_AR,
-  SubcategoryInfo,
-} from "@/lib/types";
+import { Product, CategoryRecord, SubcategoryRecord } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 
 // ─── Shelf row ────────────────────────────────────────────────────────────────
@@ -23,19 +16,18 @@ function SubcategoryShelf({
   isRTL,
   onViewAll,
 }: {
-  sub: SubcategoryInfo;
+  sub: SubcategoryRecord;
   products: Product[];
   isRTL: boolean;
   onViewAll: () => void;
 }) {
-  const label = isRTL ? SUBCATEGORY_AR[sub.slug] || sub.label : sub.label;
+  const label = isRTL ? sub.name_ar || sub.name : sub.name;
   const PREVIEW = 4;
   const preview = products.slice(0, PREVIEW);
   const remaining = products.length - PREVIEW;
 
   return (
     <div className="mb-14">
-      {/* Row header */}
       <div
         className="flex items-center justify-between mb-4"
         style={{ direction: isRTL ? "rtl" : "ltr" }}
@@ -43,9 +35,7 @@ function SubcategoryShelf({
         <h2
           className="text-2xl font-black"
           style={{
-            fontFamily: isRTL
-              ? "var(--font-cairo)"
-              : "var(--font-barlow-condensed)",
+            fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
             textTransform: isRTL ? "none" : "uppercase",
             color: "#111111",
             letterSpacing: isRTL ? "0" : "-0.01em",
@@ -57,9 +47,7 @@ function SubcategoryShelf({
           onClick={onViewAll}
           className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest group"
           style={{
-            fontFamily: isRTL
-              ? "var(--font-cairo)"
-              : "var(--font-barlow-condensed)",
+            fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
             color: "#f95c05",
             textTransform: isRTL ? "none" : "uppercase",
           }}
@@ -67,9 +55,7 @@ function SubcategoryShelf({
           {isRTL ? `عرض الكل (${products.length})` : `View All (${products.length})`}
           <span
             className={`transition-transform duration-150 ${
-              isRTL
-                ? "group-hover:-translate-x-0.5"
-                : "group-hover:translate-x-0.5"
+              isRTL ? "group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"
             }`}
           >
             {isRTL ? "←" : "→"}
@@ -77,7 +63,6 @@ function SubcategoryShelf({
         </button>
       </div>
 
-      {/* Preview strip */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
         {preview.map((product) => (
           <Link
@@ -94,14 +79,11 @@ function SubcategoryShelf({
                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-3xl">
-                🔥
-              </div>
+              <div className="w-full h-full flex items-center justify-center text-3xl">🔥</div>
             )}
           </Link>
         ))}
 
-        {/* +More tile */}
         {remaining > 0 && (
           <button
             onClick={onViewAll}
@@ -137,26 +119,33 @@ function ShopContent() {
   const categoryParam = searchParams.get("category") || "";
   const subParam = searchParams.get("tag") || "";
 
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(categoryParam);
   const [activeSubcategory, setActiveSubcategory] = useState(subParam);
 
-  const subcategories = activeCategory ? (CATEGORY_TREE[activeCategory] ?? []) : [];
+  const activeCategoryRecord = categories.find((c) => c.name === activeCategory);
+  const subcategories: SubcategoryRecord[] = activeCategoryRecord?.subcategories ?? [];
   const isShelfMode = subcategories.length > 0 && !activeSubcategory;
 
+  // Fetch categories once
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => setCategories(d.categories || []));
+  }, []);
+
+  // Fetch products when filters change
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCategory) params.set("category", activeCategory);
 
-    const currentSubs = CATEGORY_TREE[activeCategory] ?? [];
+    const currentSubs = categories.find((c) => c.name === activeCategory)?.subcategories ?? [];
     const currentIsShelfMode = currentSubs.length > 0 && !activeSubcategory;
 
-    // In shelf mode fetch everything in the category so we can group client-side
-    if (!currentIsShelfMode && activeSubcategory) {
-      params.set("tag", activeSubcategory);
-    }
+    if (!currentIsShelfMode && activeSubcategory) params.set("tag", activeSubcategory);
 
     fetch(`/api/products?${params.toString()}`)
       .then((r) => r.json())
@@ -165,7 +154,7 @@ function ShopContent() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [activeCategory, activeSubcategory]);
+  }, [activeCategory, activeSubcategory, categories]);
 
   const handleCategory = (cat: string) => {
     const next = activeCategory === cat ? "" : cat;
@@ -191,7 +180,6 @@ function ShopContent() {
     router.replace(`/shop?${p.toString()}`, { scroll: false });
   };
 
-  // Group products by subcategory for shelf mode
   const grouped = subcategories.reduce(
     (acc, sub) => {
       const matching = products.filter((p) => p.tags?.includes(sub.slug));
@@ -203,7 +191,6 @@ function ShopContent() {
 
   const hasShelfContent = Object.keys(grouped).length > 0;
 
-  // ── Skeleton ──────────────────────────────────────────────────────────────
   const ShelfSkeleton = () => (
     <div className="space-y-14">
       {[1, 2, 3].map((i) => (
@@ -232,18 +219,12 @@ function ShopContent() {
 
   return (
     <div className="min-h-screen" style={{ background: "#fffdf9" }}>
-      {/* Header */}
-      <div
-        className="py-12 px-4 border-b border-[#e5e3de]"
-        style={{ background: "#111111" }}
-      >
+      <div className="py-12 px-4 border-b border-[#e5e3de]" style={{ background: "#111111" }}>
         <div className="max-w-7xl mx-auto">
           <h1
             className="text-4xl sm:text-5xl font-black text-white"
             style={{
-              fontFamily: isRTL
-                ? "var(--font-cairo)"
-                : "var(--font-barlow-condensed)",
+              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
               textTransform: isRTL ? "none" : "uppercase",
             }}
           >
@@ -251,13 +232,9 @@ function ShopContent() {
           </h1>
           <p
             className="text-white/50 mt-2 text-sm"
-            style={{
-              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)",
-            }}
+            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
           >
-            {isRTL
-              ? "ولاعات BIC J26 مخصصة بـ 5$ فقط"
-              : "$5 per lighter · authentic BIC J26"}
+            {isRTL ? "ولاعات BIC J26 مخصصة بـ 5$ فقط" : "$5 per lighter · authentic BIC J26"}
           </p>
         </div>
       </div>
@@ -269,9 +246,7 @@ function ShopContent() {
             onClick={() => handleCategory("")}
             className="px-4 py-1.5 text-xs font-bold tracking-widest transition-all duration-150"
             style={{
-              fontFamily: isRTL
-                ? "var(--font-cairo)"
-                : "var(--font-barlow-condensed)",
+              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
               textTransform: isRTL ? "none" : "uppercase",
               background: activeCategory === "" ? "#111111" : "transparent",
               color: activeCategory === "" ? "#fffdf9" : "#111111",
@@ -280,30 +255,25 @@ function ShopContent() {
           >
             {t("allCollections")}
           </button>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => handleCategory(cat)}
+              key={cat.id}
+              onClick={() => handleCategory(cat.name)}
               className="px-4 py-1.5 text-xs font-bold tracking-widest transition-all duration-150"
               style={{
-                fontFamily: isRTL
-                  ? "var(--font-cairo)"
-                  : "var(--font-barlow-condensed)",
+                fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
                 textTransform: isRTL ? "none" : "uppercase",
-                background:
-                  activeCategory === cat ? "#f95c05" : "transparent",
-                color: activeCategory === cat ? "#fffdf9" : "#111111",
-                border: `2px solid ${
-                  activeCategory === cat ? "#f95c05" : "#e5e3de"
-                }`,
+                background: activeCategory === cat.name ? "#f95c05" : "transparent",
+                color: activeCategory === cat.name ? "#fffdf9" : "#111111",
+                border: `2px solid ${activeCategory === cat.name ? "#f95c05" : "#e5e3de"}`,
               }}
             >
-              {isRTL ? CATEGORY_AR[cat] || cat : cat}
+              {isRTL ? cat.name_ar || cat.name : cat.name}
             </button>
           ))}
         </div>
 
-        {/* Breadcrumb — shown when drilling into a subcategory grid */}
+        {/* Breadcrumb */}
         {activeSubcategory && (
           <div
             className="flex items-center gap-2 mb-6"
@@ -313,57 +283,46 @@ function ShopContent() {
               onClick={clearSubcategory}
               className="text-xs font-bold uppercase tracking-widest flex items-center gap-1 group"
               style={{
-                fontFamily: isRTL
-                  ? "var(--font-cairo)"
-                  : "var(--font-barlow-condensed)",
+                fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
                 color: "#f95c05",
                 textTransform: isRTL ? "none" : "uppercase",
               }}
             >
               <span
                 className={`transition-transform duration-150 ${
-                  isRTL
-                    ? "group-hover:translate-x-0.5"
-                    : "group-hover:-translate-x-0.5"
+                  isRTL ? "group-hover:translate-x-0.5" : "group-hover:-translate-x-0.5"
                 }`}
               >
                 {isRTL ? "→" : "←"}
               </span>
-              {isRTL
-                ? CATEGORY_AR[activeCategory] || activeCategory
-                : activeCategory}
+              {isRTL ? activeCategoryRecord?.name_ar || activeCategory : activeCategory}
             </button>
             <span className="text-[#ccc] text-xs">/</span>
             <span
               className="text-xs font-bold uppercase tracking-widest text-[#111]"
               style={{
-                fontFamily: isRTL
-                  ? "var(--font-cairo)"
-                  : "var(--font-barlow-condensed)",
+                fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
                 textTransform: isRTL ? "none" : "uppercase",
               }}
             >
               {isRTL
-                ? SUBCATEGORY_AR[activeSubcategory] || activeSubcategory
-                : subcategories.find((s) => s.slug === activeSubcategory)
-                    ?.label || activeSubcategory}
+                ? subcategories.find((s) => s.slug === activeSubcategory)?.name_ar || activeSubcategory
+                : subcategories.find((s) => s.slug === activeSubcategory)?.name || activeSubcategory}
             </span>
           </div>
         )}
 
-        {/* ── Content ─────────────────────────────────────────────────────── */}
-
+        {/* Content */}
         {loading ? (
           isShelfMode ? <ShelfSkeleton /> : <GridSkeleton />
         ) : isShelfMode ? (
-          // SHELF MODE
           hasShelfContent ? (
             <div>
               {subcategories
                 .filter((sub) => grouped[sub.slug])
                 .map((sub) => (
                   <SubcategoryShelf
-                    key={sub.slug}
+                    key={sub.id}
                     sub={sub}
                     products={grouped[sub.slug]}
                     isRTL={isRTL}
@@ -374,39 +333,24 @@ function ShopContent() {
           ) : (
             <EmptyState
               isRTL={isRTL}
-              onReset={() => {
-                setActiveCategory("");
-                setActiveSubcategory("");
-                router.replace("/shop");
-              }}
+              onReset={() => { setActiveCategory(""); setActiveSubcategory(""); router.replace("/shop"); }}
               allLabel={t("allCollections")}
             />
           )
         ) : (
-          // GRID MODE
           <>
             {products.length > 0 && (
               <p
                 className="text-sm text-[#999] mb-6"
-                style={{
-                  fontFamily: isRTL
-                    ? "var(--font-cairo)"
-                    : "var(--font-barlow)",
-                }}
+                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
               >
-                {isRTL
-                  ? `${products.length} منتج`
-                  : `${products.length} wraps`}
+                {isRTL ? `${products.length} منتج` : `${products.length} wraps`}
               </p>
             )}
             {products.length === 0 ? (
               <EmptyState
                 isRTL={isRTL}
-                onReset={() => {
-                  setActiveCategory("");
-                  setActiveSubcategory("");
-                  router.replace("/shop");
-                }}
+                onReset={() => { setActiveCategory(""); setActiveSubcategory(""); router.replace("/shop"); }}
                 allLabel={t("allCollections")}
               />
             ) : (
@@ -423,51 +367,32 @@ function ShopContent() {
   );
 }
 
-function EmptyState({
-  isRTL,
-  onReset,
-  allLabel,
-}: {
-  isRTL: boolean;
-  onReset: () => void;
-  allLabel: string;
-}) {
+function EmptyState({ isRTL, onReset, allLabel }: { isRTL: boolean; onReset: () => void; allLabel: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
       <span className="text-6xl">🔥</span>
       <p
         className="text-xl font-bold"
         style={{
-          fontFamily: isRTL
-            ? "var(--font-cairo)"
-            : "var(--font-barlow-condensed)",
+          fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
           textTransform: isRTL ? "none" : "uppercase",
           color: "#111111",
         }}
       >
         {isRTL ? "لا توجد منتجات" : "No wraps found"}
       </p>
-      <button onClick={onReset} className="btn-outline text-sm">
-        {allLabel}
-      </button>
+      <button onClick={onReset} className="btn-outline text-sm">{allLabel}</button>
     </div>
   );
 }
 
-// ─── Page wrapper ─────────────────────────────────────────────────────────────
-
 export default function ShopPage() {
   return (
-    <Suspense
-      fallback={
-        <div
-          className="min-h-screen flex items-center justify-center"
-          style={{ background: "#fffdf9" }}
-        >
-          <div className="w-8 h-8 border-2 border-[#f95c05] border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#fffdf9" }}>
+        <div className="w-8 h-8 border-2 border-[#f95c05] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
       <ShopContent />
     </Suspense>
   );

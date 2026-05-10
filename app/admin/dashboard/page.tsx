@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Order, OrderStatus } from "@/lib/types";
+import { Order, OrderStatus, Product } from "@/lib/types";
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: "#f59e0b",
@@ -22,6 +22,8 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 const SOURCES = ["WhatsApp", "Instagram", "In Person", "Other"] as const;
 type Source = (typeof SOURCES)[number];
 
+const CUSTOM_ID = "__custom__";
+
 const emptyForm = {
   first_name: "",
   last_name: "",
@@ -30,7 +32,8 @@ const emptyForm = {
   address: "",
   city: "",
   building_details: "",
-  item_description: "",
+  product_id: "",
+  custom_description: "",
   quantity: 1,
   price_each: "5.00",
   source: "WhatsApp" as Source,
@@ -47,6 +50,8 @@ export default function AdminDashboard() {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/orders", { headers: { "x-admin": "true" } })
@@ -79,11 +84,43 @@ export default function AdminDashboard() {
 
   const total = (Number(form.price_each) * form.quantity).toFixed(2);
 
+  const openModal = () => {
+    setShowModal(true);
+    setFormError("");
+    if (products.length === 0) {
+      setProductsLoading(true);
+      fetch("/api/products")
+        .then((r) => r.json())
+        .then((d) => setProducts(d.products || []))
+        .finally(() => setProductsLoading(false));
+    }
+  };
+
+  const closeModal = () => { setShowModal(false); setForm(emptyForm); };
+
+  const selectedProduct = products.find((p) => p.id === form.product_id) ?? null;
+  const isCustom = form.product_id === CUSTOM_ID;
+
+  const handleProductChange = (id: string) => {
+    const p = products.find((x) => x.id === id);
+    setForm((f) => ({
+      ...f,
+      product_id: id,
+      price_each: p ? String(p.price) : f.price_each,
+      custom_description: "",
+    }));
+  };
+
   const submitManualOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
-    if (!form.first_name || !form.phone || !form.address || !form.city || !form.item_description) {
+    const itemName = isCustom ? form.custom_description : selectedProduct?.name;
+    if (!form.first_name || !form.phone || !form.address || !form.city || !form.product_id) {
       setFormError("Please fill in all required fields.");
+      return;
+    }
+    if (isCustom && !form.custom_description) {
+      setFormError("Please enter a custom item description.");
       return;
     }
     setSubmitting(true);
@@ -103,10 +140,13 @@ export default function AdminDashboard() {
           notes,
           items: [
             {
-              product_id: null,
+              product_id: isCustom ? null : form.product_id,
               quantity: form.quantity,
               price: Number(form.price_each),
-              product: { name: form.item_description, name_ar: form.item_description },
+              product: {
+                name: itemName,
+                name_ar: isCustom ? itemName : (selectedProduct?.name_ar ?? itemName),
+              },
             },
           ],
           total: Number(total),
@@ -115,8 +155,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
       setOrders((prev) => [data.order, ...prev]);
-      setShowModal(false);
-      setForm(emptyForm);
+      closeModal();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -169,6 +208,13 @@ export default function AdminDashboard() {
             >
               Products
             </Link>
+            <Link
+              href="/admin/categories"
+              className="text-white/50 hover:text-white text-sm uppercase tracking-wider transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Categories
+            </Link>
           </nav>
         </div>
         <button
@@ -206,7 +252,7 @@ export default function AdminDashboard() {
             All Orders ({orders.length})
           </h2>
           <button
-            onClick={() => { setShowModal(true); setFormError(""); }}
+            onClick={openModal}
             className="px-4 py-2 text-xs font-black uppercase tracking-widest transition-all"
             style={{
               background: "#f95c05",
@@ -316,7 +362,7 @@ export default function AdminDashboard() {
         <div
           className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 px-4"
           style={{ background: "rgba(0,0,0,0.8)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); setForm(emptyForm); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
           <div className="w-full max-w-xl border border-white/10" style={{ background: "#111111" }}>
             {/* Modal header */}
@@ -328,7 +374,7 @@ export default function AdminDashboard() {
                 New Manual Order
               </h3>
               <button
-                onClick={() => { setShowModal(false); setForm(emptyForm); }}
+                onClick={closeModal}
                 className="text-white/40 hover:text-white text-xl leading-none transition-colors"
               >
                 ×
@@ -446,14 +492,38 @@ export default function AdminDashboard() {
 
               {/* Item */}
               <div className="border-t border-white/10 pt-5">
-                <label className={labelClass} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Item Description *</label>
-                <input
-                  value={form.item_description}
-                  onChange={(e) => setForm((f) => ({ ...f, item_description: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm"
-                  style={inputStyle}
-                  placeholder='e.g. "Flames Collection - Red" or "Custom design"'
-                />
+                <label className={labelClass} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Product *</label>
+                {productsLoading ? (
+                  <div className="flex items-center gap-2 py-2 text-white/40 text-sm" style={{ fontFamily: "var(--font-barlow)" }}>
+                    <div className="w-4 h-4 border border-[#f95c05] border-t-transparent rounded-full animate-spin" />
+                    Loading products...
+                  </div>
+                ) : (
+                  <select
+                    value={form.product_id}
+                    onChange={(e) => handleProductChange(e.target.value)}
+                    className="w-full px-3 py-2 text-sm"
+                    style={{ ...inputStyle, cursor: "pointer" }}
+                  >
+                    <option value="" disabled>— Select a product —</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} · {p.category}
+                      </option>
+                    ))}
+                    <option value={CUSTOM_ID}>✏ Custom item (not in catalog)</option>
+                  </select>
+                )}
+                {isCustom && (
+                  <input
+                    value={form.custom_description}
+                    onChange={(e) => setForm((f) => ({ ...f, custom_description: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm mt-2"
+                    style={inputStyle}
+                    placeholder='Describe the item, e.g. "Custom cedar tree design"'
+                    autoFocus
+                  />
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -512,7 +582,7 @@ export default function AdminDashboard() {
               <div className="flex gap-3 pt-1">
                 <button
                   type="button"
-                  onClick={() => { setShowModal(false); setForm(emptyForm); }}
+                  onClick={closeModal}
                   className="flex-1 py-3 text-xs font-black uppercase tracking-widest transition-all"
                   style={{
                     fontFamily: "var(--font-barlow-condensed)",

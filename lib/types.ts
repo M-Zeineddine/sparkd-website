@@ -35,55 +35,20 @@ export interface Order {
   created_at: string;
 }
 
-export interface SubcategoryInfo {
-  label: string;
+export interface SubcategoryRecord {
+  id: string;
+  category_id: string;
+  name: string;
+  name_ar: string;
   slug: string;
+  sort_order: number;
 }
 
-export const CATEGORY_TREE: Record<string, SubcategoryInfo[]> = {
-  "Anime & Manga": [
-    { label: "Attack on Titan", slug: "attack-on-titan" },
-    { label: "Naruto", slug: "naruto" },
-    { label: "Hunter x Hunter", slug: "hunter-x-hunter" },
-  ],
-  "Characters": [
-    { label: "Pokemon", slug: "pokemon" },
-    { label: "Sanrio", slug: "sanrio" },
-    { label: "Cartoons", slug: "cartoons" },
-  ],
-  "Lebanese & Arabic": [
-    { label: "Lebanese Culture", slug: "lebanese-culture" },
-    { label: "Arabic Typography", slug: "arabic-typography" },
-  ],
-  "Hip-Hop": [],
-  "Dark & Streetwear": [],
-  "Aesthetic": [],
-  "Cats": [],
-};
-
-export const CATEGORIES = Object.keys(CATEGORY_TREE);
-
-export const CATEGORY_AR: Record<string, string> = {
-  "Anime & Manga": "أنمي ومانغا",
-  "Characters": "شخصيات",
-  "Lebanese & Arabic": "لبناني وعربي",
-  "Hip-Hop": "هيب هوب",
-  "Dark & Streetwear": "داكن وستريتوير",
-  "Aesthetic": "أيستيتيك",
-  "Cats": "قطط",
-};
-
-export const SUBCATEGORY_AR: Record<string, string> = {
-  "attack-on-titan": "هجوم العمالقة",
-  "naruto": "ناروتو",
-  "hunter-x-hunter": "هانتر × هانتر",
-  "pokemon": "بوكيمون",
-  "sanrio": "سانريو",
-  "cartoons": "كرتون",
-  "lebanese-culture": "الثقافة اللبنانية",
-  "arabic-typography": "الخط العربي",
-};
-
-export const ALL_SUBCATEGORY_SLUGS = new Set(
-  Object.values(CATEGORY_TREE).flatMap((subs) => subs.map((s) => s.slug))
-);
+export interface CategoryRecord {
+  id: string;
+  name: string;
+  name_ar: string;
+  slug: string;
+  sort_order: number;
+  subcategories: SubcategoryRecord[];
+}

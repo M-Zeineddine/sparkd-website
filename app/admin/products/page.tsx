@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Product, CATEGORIES, CATEGORY_TREE, ALL_SUBCATEGORY_SLUGS } from "@/lib/types";
+import { Product, CategoryRecord, SubcategoryRecord } from "@/lib/types";
 
 interface ProductForm {
   name: string;
@@ -23,7 +23,7 @@ const emptyForm: ProductForm = {
   description: "",
   description_ar: "",
   price: "5",
-  category: CATEGORIES[0],
+  category: "",
   subcategory: "",
   image_url: "",
 };
@@ -41,7 +41,19 @@ export default function AdminProducts() {
   const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const subcategories = CATEGORY_TREE[form.category] ?? [];
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
+  const subcategories: SubcategoryRecord[] =
+    categories.find((c) => c.name === form.category)?.subcategories ?? [];
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => {
+        const cats: CategoryRecord[] = d.categories || [];
+        setCategories(cats);
+        setForm((f) => ({ ...f, category: f.category || cats[0]?.name || "" }));
+      });
+  }, []);
 
   useEffect(() => {
     fetch("/api/products", { headers: { "x-admin": "true" } })
@@ -64,7 +76,10 @@ export default function AdminProducts() {
 
   const openEdit = (p: Product) => {
     setEditingId(p.id);
-    const existingSubcategory = (p.tags || []).find((t) => ALL_SUBCATEGORY_SLUGS.has(t)) || "";
+    const allSlugs = new Set(
+      categories.flatMap((c) => c.subcategories.map((s) => s.slug))
+    );
+    const existingSubcategory = (p.tags || []).find((t) => allSlugs.has(t)) || "";
     setForm({
       name: p.name,
       name_ar: p.name_ar || "",
@@ -185,6 +200,13 @@ export default function AdminProducts() {
             >
               Products
             </span>
+            <Link
+              href="/admin/categories"
+              className="text-white/50 hover:text-white text-sm uppercase tracking-wider transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed)" }}
+            >
+              Categories
+            </Link>
           </nav>
         </div>
         <button
@@ -304,7 +326,7 @@ export default function AdminProducts() {
               <div>
                 <label className={labelCls} style={{ fontFamily: "var(--font-barlow-condensed)" }}>Category *</label>
                 <select className={inputCls} value={form.category} onChange={(e) => handleCategoryChange(e.target.value)} style={{ fontFamily: "var(--font-barlow)" }}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
 
