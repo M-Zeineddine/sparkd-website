@@ -340,8 +340,8 @@ export default function AdminProducts() {
                     style={{ fontFamily: "var(--font-barlow)" }}
                   >
                     <option value="">— None —</option>
-                    {subcategories.map(({ label, slug }) => (
-                      <option key={slug} value={slug}>{label}</option>
+                    {subcategories.map(({ name, slug }) => (
+                      <option key={slug} value={slug}>{name}</option>
                     ))}
                   </select>
                 </div>
