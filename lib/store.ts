@@ -76,6 +76,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: "sparkd-cart",
       version: 2,
+      migrate: () => ({ items: [] }),
       partialize: (state) => ({ items: state.items }),
     }
   )
