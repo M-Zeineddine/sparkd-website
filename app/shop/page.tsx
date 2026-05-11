@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -137,6 +137,8 @@ function ShopContent() {
   const [activeCategory, setActiveCategory] = useState(categoryParam);
   const [activeSubcategory, setActiveSubcategory] = useState(subParam);
   const [activeSearch, setActiveSearch] = useState(searchParam);
+  const [searchInput, setSearchInput] = useState(searchParam);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const activeCategoryRecord = categories.find((c) => c.name === activeCategory);
   const subcategories: SubcategoryRecord[] = activeCategoryRecord?.subcategories ?? [];
@@ -152,7 +154,29 @@ function ShopContent() {
   // Sync search param from URL (e.g. when navigating from navbar)
   useEffect(() => {
     setActiveSearch(searchParam);
+    setSearchInput(searchParam);
   }, [searchParam]);
+
+  // Debounced search — fires 400ms after the user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const q = searchInput.trim();
+      if (q === activeSearch) return;
+      if (q) {
+        setActiveSearch(q);
+        setActiveCategory("");
+        setActiveSubcategory("");
+        const p = new URLSearchParams();
+        p.set("search", q);
+        router.replace(`/shop?${p.toString()}`, { scroll: false });
+      } else {
+        setActiveSearch("");
+        router.replace("/shop", { scroll: false });
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   // Fetch products when filters change
   useEffect(() => {
@@ -206,7 +230,21 @@ function ShopContent() {
 
   const clearSearch = () => {
     setActiveSearch("");
+    setSearchInput("");
     router.replace("/shop", { scroll: false });
+  };
+
+  const handleShopSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const q = searchInput.trim();
+    if (!q) return;
+    setActiveSearch(q);
+    setActiveCategory("");
+    setActiveSubcategory("");
+    const p = new URLSearchParams();
+    p.set("search", q);
+    router.replace(`/shop?${p.toString()}`, { scroll: false });
+    searchInputRef.current?.blur();
   };
 
   const grouped = subcategories.reduce(
@@ -281,6 +319,51 @@ function ShopContent() {
             </button>
           ))}
         </div>
+
+        {/* Search bar */}
+        <form
+          onSubmit={handleShopSearch}
+          className="flex items-center gap-2 mb-6"
+          style={{ direction: isRTL ? "rtl" : "ltr" }}
+        >
+          <div className="flex items-center flex-1 border-2 border-[#e5e3de] focus-within:border-[#f95c05] transition-colors" style={{ background: "#fff" }}>
+            <svg className="shrink-0 mx-3 text-[#999]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="flex-1 py-2 pr-3 text-sm bg-transparent outline-none text-[#111] placeholder-[#aaa]"
+              style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="shrink-0 mx-2 text-[#aaa] hover:text-[#111] transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 text-xs font-bold tracking-widest transition-all duration-150"
+            style={{
+              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
+              textTransform: isRTL ? "none" : "uppercase",
+              background: "#111111",
+              color: "#fffdf9",
+            }}
+          >
+            {isRTL ? "بحث" : "Search"}
+          </button>
+        </form>
 
         {/* Search results banner */}
         {activeSearch && (
