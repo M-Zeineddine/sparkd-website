@@ -6,7 +6,8 @@ export function middleware(req: NextRequest) {
   if (
     pathname.startsWith("/admin/dashboard") ||
     pathname.startsWith("/admin/products") ||
-    pathname.startsWith("/admin/categories")
+    pathname.startsWith("/admin/categories") ||
+    pathname.startsWith("/admin/analytics")
   ) {
     const session = req.cookies.get("admin_session")?.value;
     const expectedToken = process.env.ADMIN_SESSION_TOKEN;
@@ -27,5 +28,7 @@ export const config = {
     "/admin/products/:path*",
     "/admin/categories",
     "/admin/categories/:path*",
+    "/admin/analytics",
+    "/admin/analytics/:path*",
   ],
 };
