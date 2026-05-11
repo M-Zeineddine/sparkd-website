@@ -1,10 +1,11 @@
 import { ProductSize } from "@/lib/types";
 
-import { City } from "country-state-city";
-
-export const LEBANESE_CITIES: string[] = City.getCitiesOfCountry("LB")!
-  .map((c) => c.name)
-  .sort();
+export const LEBANESE_CITIES: string[] = [
+  "Aanjar", "Ain Ebel", "Aley", "Akkar", "Baabda", "Baalbek", "Batroun",
+  "Beirut", "Byblos", "Chouf", "Hasbaya", "Hermel", "Jbeil", "Jounieh",
+  "Kesrwan", "Koura", "Marjayoun", "Metn", "Nabatieh", "Rashaya",
+  "Sidon", "Tripoli", "Tyre", "Zahle",
+];
 
 export const DEFAULT_SIZES: ProductSize[] = [
   { size: "S", label: "Small",  price: 3,   available: false },
