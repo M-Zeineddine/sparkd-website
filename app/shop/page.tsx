@@ -129,16 +129,18 @@ function ShopContent() {
 
   const categoryParam = searchParams.get("category") || "";
   const subParam = searchParams.get("tag") || "";
+  const searchParam = searchParams.get("search") || "";
 
   const [categories, setCategories] = useState<CategoryRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(categoryParam);
   const [activeSubcategory, setActiveSubcategory] = useState(subParam);
+  const [activeSearch, setActiveSearch] = useState(searchParam);
 
   const activeCategoryRecord = categories.find((c) => c.name === activeCategory);
   const subcategories: SubcategoryRecord[] = activeCategoryRecord?.subcategories ?? [];
-  const isShelfMode = subcategories.length > 0 && !activeSubcategory;
+  const isShelfMode = subcategories.length > 0 && !activeSubcategory && !activeSearch;
 
   // Fetch categories once
   useEffect(() => {
@@ -147,16 +149,25 @@ function ShopContent() {
       .then((d) => setCategories(d.categories || []));
   }, []);
 
+  // Sync search param from URL (e.g. when navigating from navbar)
+  useEffect(() => {
+    setActiveSearch(searchParam);
+  }, [searchParam]);
+
   // Fetch products when filters change
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (activeCategory) params.set("category", activeCategory);
 
-    const currentSubs = categories.find((c) => c.name === activeCategory)?.subcategories ?? [];
-    const currentIsShelfMode = currentSubs.length > 0 && !activeSubcategory;
+    if (activeSearch) {
+      params.set("search", activeSearch);
+    } else {
+      if (activeCategory) params.set("category", activeCategory);
 
-    if (!currentIsShelfMode && activeSubcategory) params.set("tag", activeSubcategory);
+      const currentSubs = categories.find((c) => c.name === activeCategory)?.subcategories ?? [];
+      const currentIsShelfMode = currentSubs.length > 0 && !activeSubcategory;
+      if (!currentIsShelfMode && activeSubcategory) params.set("tag", activeSubcategory);
+    }
 
     fetch(`/api/products?${params.toString()}`)
       .then((r) => r.json())
@@ -165,12 +176,13 @@ function ShopContent() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [activeCategory, activeSubcategory, categories]);
+  }, [activeCategory, activeSubcategory, activeSearch, categories]);
 
   const handleCategory = (cat: string) => {
     const next = activeCategory === cat ? "" : cat;
     setActiveCategory(next);
     setActiveSubcategory("");
+    setActiveSearch("");
     const p = new URLSearchParams();
     if (next) p.set("category", next);
     router.replace(`/shop?${p.toString()}`, { scroll: false });
@@ -178,6 +190,7 @@ function ShopContent() {
 
   const handleSubcategory = (slug: string) => {
     setActiveSubcategory(slug);
+    setActiveSearch("");
     const p = new URLSearchParams();
     if (activeCategory) p.set("category", activeCategory);
     p.set("tag", slug);
@@ -189,6 +202,11 @@ function ShopContent() {
     const p = new URLSearchParams();
     if (activeCategory) p.set("category", activeCategory);
     router.replace(`/shop?${p.toString()}`, { scroll: false });
+  };
+
+  const clearSearch = () => {
+    setActiveSearch("");
+    router.replace("/shop", { scroll: false });
   };
 
   const grouped = subcategories.reduce(
@@ -263,6 +281,35 @@ function ShopContent() {
             </button>
           ))}
         </div>
+
+        {/* Search results banner */}
+        {activeSearch && (
+          <div
+            className="flex items-center gap-3 mb-6"
+            style={{ direction: isRTL ? "rtl" : "ltr" }}
+          >
+            <span
+              className="text-sm text-[#999]"
+              style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
+            >
+              {products.length} {t("searchResultsFor")}{" "}
+              <span className="font-bold text-[#111]">"{activeSearch}"</span>
+            </span>
+            <button
+              onClick={clearSearch}
+              className="text-xs font-bold uppercase tracking-widest flex items-center gap-1 hover:text-[#f95c05] transition-colors"
+              style={{
+                fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
+                color: "#f95c05",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              {t("clearSearch")}
+            </button>
+          </div>
+        )}
 
         {/* Breadcrumb */}
         {activeSubcategory && (

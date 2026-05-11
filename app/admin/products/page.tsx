@@ -21,7 +21,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "",
   name_ar: "",
-  price: "5",
+  price: "4",
   category: "",
   subcategory: "",
   image_urls: [],

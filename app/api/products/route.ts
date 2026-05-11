@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
   const tag = searchParams.get("tag");
+  const search = searchParams.get("search");
   const limit = parseInt(searchParams.get("limit") || "100");
 
   let query = supabase
@@ -23,6 +24,9 @@ export async function GET(req: NextRequest) {
   }
   if (tag) {
     query = query.contains("tags", [tag]);
+  }
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,name_ar.ilike.%${search}%`);
   }
 
   const { data, error } = await query;

@@ -13,6 +13,9 @@ export const translations = {
     cart: "Cart",
     admin: "Admin",
     toggleLang: "عربي",
+    searchPlaceholder: "Search designs...",
+    searchResultsFor: "results for",
+    clearSearch: "Clear",
 
     // Hero
     tagline: "Light It Your Way",
@@ -23,7 +26,7 @@ export const translations = {
     // Product
     addToCart: "Add to Cart",
     addedToCart: "Added!",
-    price: "$5.00",
+    price: "$4.00",
     inStock: "In Stock",
     viewProduct: "View Lighter",
     productDescription: "Description",
@@ -137,6 +140,9 @@ export const translations = {
     cart: "السلة",
     admin: "الإدارة",
     toggleLang: "English",
+    searchPlaceholder: "ابحث عن تصاميم...",
+    searchResultsFor: "نتيجة لـ",
+    clearSearch: "مسح",
 
     // Hero
     tagline: "أشعلها بطريقتك",
@@ -147,7 +153,7 @@ export const translations = {
     // Product
     addToCart: "أضف للسلة",
     addedToCart: "تمت الإضافة!",
-    price: "5.00$",
+    price: "4.00$",
     inStock: "متوفر",
     viewProduct: "عرض الولاعة",
     productDescription: "الوصف",
