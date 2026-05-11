@@ -351,18 +351,6 @@ function ShopContent() {
               </button>
             )}
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 text-xs font-bold tracking-widest transition-all duration-150"
-            style={{
-              fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
-              textTransform: isRTL ? "none" : "uppercase",
-              background: "#111111",
-              color: "#fffdf9",
-            }}
-          >
-            {isRTL ? "بحث" : "Search"}
-          </button>
         </form>
 
         {/* Search results banner */}
