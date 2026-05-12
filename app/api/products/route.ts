@@ -26,7 +26,20 @@ export async function GET(req: NextRequest) {
     query = query.contains("tags", [tag]);
   }
   if (search) {
-    query = query.or(`name.ilike.%${search}%,name_ar.ilike.%${search}%`);
+    const { data: subMatches } = await supabase
+      .from("subcategories")
+      .select("slug")
+      .or(`name.ilike.%${search}%,name_ar.ilike.%${search}%,slug.ilike.%${search}%`);
+
+    const orParts = [
+      `name.ilike.%${search}%`,
+      `name_ar.ilike.%${search}%`,
+      `category.ilike.%${search}%`,
+    ];
+
+    subMatches?.forEach((s) => orParts.push(`tags.cs.{${s.slug}}`));
+
+    query = query.or(orParts.join(","));
   }
 
   const { data, error } = await query;

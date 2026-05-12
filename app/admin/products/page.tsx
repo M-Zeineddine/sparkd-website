@@ -69,7 +69,7 @@ export default function AdminProducts() {
 
   const openAdd = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, category: categories[0]?.name || "" });
     setShowForm(true);
   };
 
@@ -97,7 +97,7 @@ export default function AdminProducts() {
     setForm((f) => ({ ...f, category: cat, subcategory: "" }));
   };
 
-  const resizeImage = (file: File, maxPx = 1500): Promise<Blob> =>
+  const resizeImage = (file: File, maxPx = 800): Promise<Blob> =>
     new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
