@@ -15,6 +15,7 @@ export interface Product {
   image_url: string;
   image_urls: string[];
   in_stock: boolean;
+  is_best_seller: boolean;
   sizes: ProductSize[];
   category: string;
   tags: string[];

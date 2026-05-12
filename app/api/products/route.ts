@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get("category");
   const tag = searchParams.get("tag");
   const search = searchParams.get("search");
+  const bestSeller = searchParams.get("best_seller");
   const limit = parseInt(searchParams.get("limit") || "100");
 
   let query = supabase
@@ -19,6 +20,9 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: false })
     .limit(limit);
 
+  if (bestSeller) {
+    query = query.eq("is_best_seller", true);
+  }
   if (category) {
     query = query.eq("category", category);
   }

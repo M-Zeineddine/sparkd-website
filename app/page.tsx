@@ -48,14 +48,14 @@ const COLLECTION_ICONS: Record<string, React.ReactNode> = {
 
 export default function HomePage() {
   const { t, isRTL } = useLang();
-  const [featured, setFeatured] = useState<Product[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/products?limit=8")
+    fetch("/api/products?best_seller=true")
       .then((r) => r.json())
-      .then((data) => { setFeatured(data.products || []); setLoading(false); })
+      .then((data) => { setBestSellers(data.products || []); setLoading(false); })
       .catch(() => setLoading(false));
 
     fetch("/api/categories")
@@ -210,33 +210,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Featured Lighters ── */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl sm:text-4xl font-black" style={{ ...headingStyle, color: "#111111" }}>
-              {t("featuredProducts")}
-            </h2>
-            <Link href="/shop" className="text-sm font-bold text-[#f95c05] hover:text-[#d94d03] transition-colors" style={{ ...headingStyle, fontSize: "0.8rem" }}>
-              {isRTL ? "عرض الكل" : "View All"}
-            </Link>
-          </div>
+      {/* ── Best Sellers ── */}
+      {(loading || bestSellers.length > 0) && (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-10">
+              <h2 className="text-3xl sm:text-4xl font-black" style={{ ...headingStyle, color: "#111111" }}>
+                {isRTL ? "الأكثر مبيعاً" : "Best Sellers"}
+              </h2>
+            </div>
 
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-[#e5e3de] animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {featured.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="aspect-square bg-[#e5e3de] animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {bestSellers.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── CTA Banner ── */}
       <section className="py-20 px-4 text-center" style={{ background: "#111111" }}>

@@ -15,6 +15,7 @@ interface ProductForm {
   subcategory: string;
   image_urls: string[];
   in_stock: boolean;
+  is_best_seller: boolean;
   sizes: ProductSize[];
 }
 
@@ -26,6 +27,7 @@ const emptyForm: ProductForm = {
   subcategory: "",
   image_urls: [],
   in_stock: true,
+  is_best_seller: false,
   sizes: DEFAULT_SIZES,
 };
 
@@ -88,6 +90,7 @@ export default function AdminProducts() {
       subcategory: existingSubcategory,
       image_urls: urls,
       in_stock: p.in_stock !== false,
+      is_best_seller: p.is_best_seller ?? false,
       sizes: mergeSizes(p.sizes),
     });
     setShowForm(true);
@@ -175,6 +178,7 @@ export default function AdminProducts() {
         image_url: cleanUrls[0] || "",
         image_urls: cleanUrls,
         in_stock: form.in_stock,
+        is_best_seller: form.is_best_seller,
         sizes: form.sizes,
       };
 
@@ -565,6 +569,26 @@ export default function AdminProducts() {
               >
                 <span className="w-2 h-2 rounded-full" style={{ background: form.in_stock ? "#22c55e" : "#ef4444" }} />
                 {form.in_stock ? "In Stock" : "Sold Out"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between py-4 border-t border-white/10">
+              <span className="text-xs uppercase tracking-widest text-white/40" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                Best Seller
+              </span>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, is_best_seller: !f.is_best_seller }))}
+                className="flex items-center gap-2 px-3 py-1.5 border transition-all text-xs font-bold uppercase tracking-wider"
+                style={{
+                  fontFamily: "var(--font-barlow-condensed)",
+                  background: form.is_best_seller ? "rgba(249,92,5,0.1)" : "transparent",
+                  borderColor: form.is_best_seller ? "rgba(249,92,5,0.5)" : "rgba(255,255,255,0.1)",
+                  color: form.is_best_seller ? "#f95c05" : "rgba(255,255,255,0.2)",
+                }}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ background: form.is_best_seller ? "#f95c05" : "rgba(255,255,255,0.2)" }} />
+                {form.is_best_seller ? "Best Seller" : "Not Featured"}
               </button>
             </div>
 
