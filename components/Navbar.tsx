@@ -40,6 +40,13 @@ export default function Navbar() {
       style={{ background: "#111111" }}
       className="sticky top-0 z-50 w-full"
     >
+      {/* Announcement bar */}
+      <div
+        className="w-full text-center py-2.5 px-4 text-base font-bold tracking-wide uppercase"
+        style={{ background: "#f95c05", color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
+      >
+        🔥 Bundle Deal 3 — Large for $10
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
@@ -65,8 +72,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/custom"
-            className="text-sm tracking-widest uppercase font-bold px-3 py-1 transition-opacity hover:opacity-80"
-            style={{ background: "#f95c05", color: "#fff", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)" }}
+            className="text-white/80 hover:text-white transition-colors text-sm tracking-widest uppercase"
           >
             {isRTL ? "تصميم خاص" : "Custom"}
           </Link>
@@ -201,8 +207,8 @@ export default function Navbar() {
           <Link
             href="/custom"
             onClick={() => setMenuOpen(false)}
-            className="text-lg font-black tracking-widest uppercase w-fit px-4 py-2"
-            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", background: "#f95c05", color: "#fff" }}
+            className="text-white/80 hover:text-white text-lg font-heading tracking-widest uppercase"
+            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)" }}
           >
             {isRTL ? "تصميم خاص" : "Custom"}
           </Link>

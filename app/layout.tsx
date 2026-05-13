@@ -59,12 +59,6 @@ export default function RootLayout({
         style={{ background: "#fffdf9" }}
       >
         <LangProvider>
-          <div
-            className="w-full text-center py-2.5 px-4 text-base font-bold tracking-wide uppercase"
-            style={{ background: "#f95c05", color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
-          >
-            🔥 Bundle Deal 3 — Large for $10
-          </div>
           <Navbar />
           <CartDrawer />
           <main>{children}</main>
