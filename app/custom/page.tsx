@@ -107,18 +107,18 @@ export default function CustomPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4" style={{ background: "#111111" }}>
+      <section className="py-20 px-4" style={{ background: "#fffdf9", borderTop: "4px solid #f95c05" }}>
         <div className="max-w-xl mx-auto flex flex-col items-center gap-6 text-center">
           <div className="w-12 h-0.5" style={{ background: "#f95c05" }} />
           <h2
-            className="text-4xl sm:text-5xl font-black text-white leading-none"
-            style={headingStyle}
+            className="text-4xl sm:text-5xl font-black leading-none"
+            style={{ ...headingStyle, color: "#111111" }}
           >
             {isRTL ? "جاهز تطلب؟" : "Ready to Order?"}
           </h2>
           <p
-            className="text-white/50 text-base leading-relaxed max-w-sm"
-            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
+            className="text-base leading-relaxed max-w-sm"
+            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)", color: "#777" }}
           >
             {isRTL
               ? "راسلنا مباشرة وبنرد عليك بأسرع وقت."
@@ -138,7 +138,7 @@ export default function CustomPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline px-8 py-3.5 text-base"
-              style={{ borderColor: "rgba(255,255,255,0.25)", color: "white" }}
+              style={{ borderColor: "#111111", color: "#111111" }}
             >
               {isRTL ? "واتساب" : "WhatsApp"}
             </a>

@@ -104,12 +104,17 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <Link href="/shop">
-              <button className="btn-primary text-base px-8 py-3.5">{t("shopNow")}</button>
+              <button
+                className="btn-outline text-base py-3.5 whitespace-nowrap"
+                style={{ borderColor: "rgba(255,255,255,0.25)", color: "white", width: "190px", height: "52px" }}
+              >
+                {t("shopNow")}
+              </button>
             </Link>
             <Link href="/custom">
               <button
-                className="btn-outline text-base px-8 py-3.5"
-                style={{ borderColor: "rgba(255,255,255,0.25)", color: "white" }}
+                className="btn-primary text-base py-3.5 whitespace-nowrap"
+                style={{ width: "190px", height: "52px" }}
               >
                 {isRTL ? "اطلب تصميمك" : "Get Custom"}
               </button>
@@ -238,7 +243,7 @@ export default function HomePage() {
       )}
 
       {/* ── Custom Designs ── */}
-      <section className="py-20 px-4" style={{ background: "#111111" }}>
+      <section className="py-20 px-4" style={{ background: "#fffdf9", borderTop: "4px solid #f95c05" }}>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
@@ -252,13 +257,13 @@ export default function HomePage() {
               </span>
               <h2
                 className="text-5xl sm:text-7xl font-black leading-none"
-                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", textTransform: isRTL ? "none" : "uppercase", color: "#ffffff" }}
+                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", textTransform: isRTL ? "none" : "uppercase", color: "#111111" }}
               >
-                {isRTL ? "تصميمك\nأنت" : "Your Design.\nYour Rules."}
+                {isRTL ? "تصميمك\nأنت" : "Your Design.\nYour Lighter."}
               </h2>
               <p
-                className="text-white/50 text-base leading-relaxed max-w-sm"
-                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
+                className="text-base leading-relaxed max-w-sm"
+                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)", color: "#777" }}
               >
                 {isRTL
                   ? "ما لقيت تصميمك؟ أرسل لنا فكرتك وبنحوّلها ولاعة حصرية تخصك أنت."
@@ -279,9 +284,9 @@ export default function HomePage() {
                 <div
                   key={i}
                   className="aspect-square flex items-center justify-center"
-                  style={{ background: i % 2 === 0 ? "#1a1a1a" : "#222" }}
+                  style={{ background: i % 2 === 0 ? "#f0ede8" : "#e8e5e0" }}
                 >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.2">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.2">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     <circle cx="8.5" cy="8.5" r="1.5" />
                     <path d="M21 15l-5-5L5 21" />
