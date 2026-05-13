@@ -106,12 +106,12 @@ export default function HomePage() {
             <Link href="/shop">
               <button className="btn-primary text-base px-8 py-3.5">{t("shopNow")}</button>
             </Link>
-            <Link href="/shop">
+            <Link href="/custom">
               <button
                 className="btn-outline text-base px-8 py-3.5"
                 style={{ borderColor: "rgba(255,255,255,0.25)", color: "white" }}
               >
-                {t("exploreCollections")}
+                {isRTL ? "اطلب تصميمك" : "Get Custom"}
               </button>
             </Link>
           </div>
@@ -237,19 +237,71 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ── CTA Banner ── */}
-      <section className="py-20 px-4 text-center" style={{ background: "#111111" }}>
-        <div className="max-w-2xl mx-auto flex flex-col items-center gap-5">
-          <div className="w-12 h-0.5" style={{ background: "#f95c05" }} />
-          <h2 className="text-white text-4xl sm:text-6xl font-black leading-none" style={headingStyle}>
-            {isRTL ? "ولاعتك، أسلوبك" : "Your Lighter. Your Style."}
-          </h2>
-          <p className="text-white/50 text-base sm:text-lg max-w-sm leading-relaxed" style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}>
-            {isRTL ? "تصاميم حصرية. توصيل لعندك." : "Exclusive designs. Delivered to your door."}
-          </p>
-          <Link href="/shop">
-            <button className="btn-primary px-10 py-4 text-base mt-2">{t("shopNow")}</button>
-          </Link>
+      {/* ── Custom Designs ── */}
+      <section className="py-20 px-4" style={{ background: "#111111" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+
+            {/* Text side */}
+            <div className="flex-1 flex flex-col gap-6" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+              <span
+                className="text-xs tracking-[0.2em] uppercase font-bold"
+                style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
+              >
+                {isRTL ? "تصميم حصري" : "Exclusive Service"}
+              </span>
+              <h2
+                className="text-5xl sm:text-7xl font-black leading-none"
+                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", textTransform: isRTL ? "none" : "uppercase", color: "#ffffff" }}
+              >
+                {isRTL ? "تصميمك\nأنت" : "Your Design.\nYour Rules."}
+              </h2>
+              <p
+                className="text-white/50 text-base leading-relaxed max-w-sm"
+                style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
+              >
+                {isRTL
+                  ? "ما لقيت تصميمك؟ أرسل لنا فكرتك وبنحوّلها ولاعة حصرية تخصك أنت."
+                  : "Want your own design on a lighter? Send us your idea and we'll make it happen."}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                <Link href="/custom">
+                  <button className="btn-primary px-8 py-3.5 text-base">
+                    {isRTL ? "اطلب تصميمك" : "Get Custom"}
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Visual side */}
+            <div className="flex-1 w-full grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="aspect-square flex items-center justify-center"
+                  style={{ background: i % 2 === 0 ? "#1a1a1a" : "#222" }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <path d="M21 15l-5-5L5 21" />
+                  </svg>
+                </div>
+              ))}
+              <div
+                className="aspect-square col-span-3 flex items-center justify-center gap-2"
+                style={{ background: "#f95c05" }}
+              >
+                <span
+                  className="text-white font-black text-lg uppercase tracking-widest"
+                  style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                >
+                  {isRTL ? "أمثلة قريباً" : "Examples Coming Soon"}
+                </span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
     </div>

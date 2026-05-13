@@ -63,6 +63,13 @@ export default function Navbar() {
           >
             {t("shop")}
           </Link>
+          <Link
+            href="/custom"
+            className="text-sm tracking-widest uppercase font-bold px-3 py-1 transition-opacity hover:opacity-80"
+            style={{ background: "#f95c05", color: "#fff", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)" }}
+          >
+            {isRTL ? "تصميم خاص" : "Custom"}
+          </Link>
         </nav>
 
         {/* Desktop Search (expandable) */}
@@ -190,6 +197,14 @@ export default function Navbar() {
             style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)" }}
           >
             {t("shop")}
+          </Link>
+          <Link
+            href="/custom"
+            onClick={() => setMenuOpen(false)}
+            className="text-lg font-black tracking-widest uppercase w-fit px-4 py-2"
+            style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", background: "#f95c05", color: "#fff" }}
+          >
+            {isRTL ? "تصميم خاص" : "Custom"}
           </Link>
         </div>
       )}
