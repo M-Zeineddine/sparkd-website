@@ -15,9 +15,8 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const totalItems = useCartStore((s) => s.totalItems);
+  const count = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
   const toggleCart = useCartStore((s) => s.toggleCart);
-  const count = totalItems();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -42,10 +41,23 @@ export default function Navbar() {
     >
       {/* Announcement bar */}
       <div
-        className="w-full text-center py-2.5 px-4 text-base font-bold tracking-wide uppercase"
-        style={{ background: "#f95c05", color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
+        className="w-full flex items-center justify-center gap-4 py-2.5 px-4"
+        style={{ background: "#f95c05" }}
       >
-        🔥 Bundle Deal 3 — Large for $10
+        <span
+          className="text-sm font-bold tracking-wide uppercase"
+          style={{ color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)" }}
+        >
+          🔥 Bundle Deal — 3 Large for $10
+        </span>
+        <span style={{ color: "rgba(255,255,255,0.4)" }}>|</span>
+        <Link
+          href="/shop?size=L"
+          className="text-xs font-bold uppercase tracking-widest hover:opacity-70 transition-opacity"
+          style={{ color: "#fffdf9", fontFamily: "var(--font-barlow-condensed)", textDecoration: "underline", textUnderlineOffset: "3px" }}
+        >
+          {isRTL ? "تسوق الآن →" : "Shop Now →"}
+        </Link>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Logo */}

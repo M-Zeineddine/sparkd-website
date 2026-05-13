@@ -26,8 +26,9 @@ interface FormErrors {
 export default function CheckoutPage() {
   const { t, isRTL } = useLang();
   const router = useRouter();
-  const { items, totalPrice, clearCart } = useCartStore();
+  const { items, totalPrice, bundleInfo, clearCart } = useCartStore();
   const total = totalPrice();
+  const { count: bundleCount, savings: bundleSavings } = bundleInfo();
 
   const [form, setForm] = useState<FormData>({
     firstName: "",
@@ -109,6 +110,8 @@ export default function CheckoutPage() {
           notes: form.notes,
           items,
           total,
+          bundle_count: bundleCount,
+          bundle_savings: bundleSavings,
         }),
       });
 
@@ -305,6 +308,19 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                {bundleCount > 0 && (
+                  <div
+                    className="flex items-center justify-between px-3 py-2 mb-3"
+                    style={{ background: "rgba(249,92,5,0.08)", border: "1px solid rgba(249,92,5,0.3)" }}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                      🔥 {bundleCount}× Bundle Deal
+                    </span>
+                    <span className="text-xs font-bold" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                      −${bundleSavings.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 <div className="border-t border-[#e5e3de] pt-4 flex justify-between items-center mb-5">
                   <span className="font-black" style={fontHeading}>{t("total")}</span>
                   <span

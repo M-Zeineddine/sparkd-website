@@ -44,6 +44,8 @@ export interface Order {
   notes: string;
   items: CartItem[];
   total: number;
+  bundle_count: number;
+  bundle_savings: number;
   status: OrderStatus;
   created_at: string;
 }

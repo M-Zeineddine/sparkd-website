@@ -27,7 +27,7 @@ export default function SparkdLogo({ className = "", size = "md", textColor = "w
   };
 
   return (
-    <span className={`inline-flex items-center gap-0 ${className}`} style={{ lineHeight: 1 }}>
+    <span className={`inline-flex items-center gap-0 ${className}`} style={{ lineHeight: 1, direction: "ltr" }}>
       <span style={letterStyle}>SPARK</span>
       {/* Flame as the apostrophe */}
       <svg

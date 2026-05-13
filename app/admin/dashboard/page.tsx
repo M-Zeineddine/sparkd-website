@@ -336,6 +336,11 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-4 py-4 font-black text-white whitespace-nowrap" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
                         ${Number(order.total).toFixed(2)}
+                        {order.bundle_count > 0 && (
+                          <div className="text-[10px] font-bold mt-0.5" style={{ color: "#f95c05" }}>
+                            🔥 {order.bundle_count}× bundle −${Number(order.bundle_savings).toFixed(2)}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <select

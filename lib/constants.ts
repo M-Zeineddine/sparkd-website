@@ -7,6 +7,10 @@ export const LEBANESE_CITIES: string[] = [
   "Sidon", "Tripoli", "Tyre", "Zahle",
 ];
 
+export const BUNDLE_QTY = 3;
+export const BUNDLE_PRICE = 10;
+export const BUNDLE_SIZE = "L";
+
 export const DEFAULT_SIZES: ProductSize[] = [
   { size: "S", label: "Small",  price: 3,   available: false },
   { size: "M", label: "Medium", price: 3.5, available: false },

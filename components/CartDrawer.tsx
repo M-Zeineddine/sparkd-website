@@ -8,9 +8,10 @@ import { DEFAULT_SIZES } from "@/lib/constants";
 
 export default function CartDrawer() {
   const { t, isRTL } = useLang();
-  const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice } =
+  const { items, isOpen, closeCart, removeItem, incrementItem, decrementItem, totalPrice, bundleInfo } =
     useCartStore();
   const total = totalPrice();
+  const { count: bundleCount, savings: bundleSavings } = bundleInfo();
 
   if (!isOpen) return null;
 
@@ -114,14 +115,14 @@ export default function CartDrawer() {
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => updateQuantity(cartKey, quantity - 1)}
+                          onClick={() => decrementItem(cartKey)}
                           className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
                         >
                           −
                         </button>
                         <span className="text-sm font-semibold min-w-[20px] text-center">{quantity}</span>
                         <button
-                          onClick={() => updateQuantity(cartKey, quantity + 1)}
+                          onClick={() => incrementItem(cartKey)}
                           className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
                         >
                           +
@@ -150,6 +151,19 @@ export default function CartDrawer() {
         {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-[#e5e3de] px-5 py-4 flex flex-col gap-3">
+            {bundleCount > 0 && (
+              <div
+                className="flex items-center justify-between px-3 py-2"
+                style={{ background: "rgba(249,92,5,0.08)", border: "1px solid rgba(249,92,5,0.3)" }}
+              >
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                  🔥 {bundleCount}× Bundle Deal
+                </span>
+                <span className="text-xs font-bold" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                  −${bundleSavings.toFixed(2)}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span
                 className="text-sm uppercase tracking-widest font-bold"
