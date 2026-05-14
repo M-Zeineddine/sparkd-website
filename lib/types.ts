@@ -40,6 +40,7 @@ export interface OrderItem {
     name_ar?: string;
     image_url?: string;
   };
+  size?: ProductSize;
 }
 
 export interface Order {
