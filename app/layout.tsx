@@ -28,25 +28,33 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Spark'd — Light It Your Way",
+  metadataBase: new URL("https://sparkd.online"),
+  title: {
+    default: "Spark'd — Light It Your Way",
+    template: "%s | Spark'd",
+  },
   description:
-    "Custom lighters designed your way. Unique collections — Lebanese, streetwear, aesthetic, and more. Delivered to your door.",
-  keywords: ["custom lighters", "BIC lighter", "Lebanon", "streetwear", "lighter shop", "custom lighter"],
+    "Custom lighter wraps designed your way. Anime, streetwear, Lebanese, and aesthetic collections. Cash on delivery across Lebanon.",
+  keywords: [
+    "custom lighters Lebanon", "lighter wraps", "BIC lighter wraps", "anime lighters",
+    "streetwear lighters", "custom lighter design", "Lebanon delivery", "lighter shop Lebanon",
+    "unique lighters", "ولاعات مخصصة", "ولاعة لبنان",
+  ],
   openGraph: {
     title: "Spark'd — Light It Your Way",
-    description:
-      "Custom lighters designed your way. Unique collections, delivered to your door.",
+    description: "Custom lighter wraps. Anime, streetwear, Lebanese collections. Delivered to your door.",
     url: "https://sparkd.online",
     siteName: "Spark'd",
     type: "website",
+    locale: "en_US",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Spark'd" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Spark'd — Light It Your Way",
-    description: "Custom lighters. Unique collections. Delivered to your door.",
+    description: "Custom lighter wraps. Unique collections. Delivered across Lebanon.",
   },
-  metadataBase: new URL("https://sparkd.online"),
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
