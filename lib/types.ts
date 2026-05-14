@@ -31,6 +31,17 @@ export interface CartItem {
 
 export type OrderStatus = "pending" | "confirmed" | "delivered" | "cancelled";
 
+export interface OrderItem {
+  product_id: string | null;
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+    name_ar?: string;
+    image_url?: string;
+  };
+}
+
 export interface Order {
   id: string;
   order_number: string;
@@ -42,7 +53,7 @@ export interface Order {
   city: string;
   building_details: string;
   notes: string;
-  items: CartItem[];
+  items: OrderItem[];
   total: number;
   bundle_count: number;
   bundle_savings: number;
