@@ -13,6 +13,7 @@ import {
 import type Konva from "konva";
 import { DEFAULT_LIGHTER, type LighterSpec } from "@/lib/constants";
 import ColorPicker from "./ColorPicker";
+import LighterPreview from "./LighterPreview";
 
 const PX_PER_CM = 72;
 
@@ -63,6 +64,8 @@ export default function DesignEditor({ onExport }: Props) {
   const [imgPos, setImgPos] = useState<Pos>({ x: centerX + 8, y: 8, w: L.faceW - 16, h: CH - 16 });
   const [selected, setSelected] = useState(false);
   const [bgColor, setBgColor] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showFolds, setShowFolds] = useState(true);
   const prevMode = useRef<Mode>("single");
 
   // Eyedropper state
@@ -102,6 +105,17 @@ export default function DesignEditor({ onExport }: Props) {
     el.src = url;
     e.target.value = "";
   }, [mode]);
+
+  const handlePreview = useCallback(() => {
+    setSelected(false);
+    setShowFolds(false);
+    // Give React + Konva time to re-render without fold lines before capturing
+    setTimeout(() => {
+      const url = stageRef.current?.toDataURL({ pixelRatio: 2 }) ?? "";
+      setPreviewUrl(url);
+      setShowFolds(true);
+    }, 50);
+  }, []);
 
   const handleExport = useCallback(() => {
     setSelected(false);
@@ -263,10 +277,10 @@ export default function DesignEditor({ onExport }: Props) {
               }
             />
 
-            {activeFolds.map((x) => (
+            {showFolds && activeFolds.map((x) => (
               <Line key={x} points={[x, 0, x, CH]} stroke="#f95c05" strokeWidth={1.5} dash={[8, 5]} />
             ))}
-            {activeFolds.map((x) => (
+            {showFolds && activeFolds.map((x) => (
               <Text key={`l${x}`} x={x - 22} y={6} width={44} text="FOLD" fontSize={8} fill="#f95c05" align="center" letterSpacing={1} />
             ))}
 
@@ -303,11 +317,24 @@ export default function DesignEditor({ onExport }: Props) {
         </label>
 
         {img && (
+          <button
+            onClick={handlePreview}
+            className="px-6 py-2.5 text-sm font-bold uppercase tracking-widest border-2 transition-colors"
+            style={{ fontFamily: "var(--font-barlow-condensed)", borderColor: "#888", color: "#888" }}
+          >
+            Preview on Lighter
+          </button>
+        )}
+        {img && (
           <button className="btn-primary px-8 py-2.5 text-sm" onClick={handleExport}>
             Use This Design →
           </button>
         )}
       </div>
+
+      {previewUrl && (
+        <LighterPreview dataUrl={previewUrl} mode={mode} onClose={() => setPreviewUrl(null)} />
+      )}
 
       <p className="text-xs text-center" style={{ fontFamily: "var(--font-barlow)", color: "#aaa", maxWidth: 300 }}>
         For best print quality, upload a high-resolution image (300 DPI or higher).
