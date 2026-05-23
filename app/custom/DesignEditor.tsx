@@ -121,21 +121,25 @@ export default function DesignEditor({ onExport }: Props) {
     });
   }, []);
 
-  const commitPick = useCallback(() => {
-    if (!pickPreview || !pickResolveRef.current) return;
-    pickResolveRef.current(pickPreview.color);
+  const handlePickCommit = useCallback(() => {
+    const stage = stageRef.current;
+    const canvas = pickCanvasRef.current;
+    if (!stage || !canvas || !pickResolveRef.current) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    const color = sampleCanvas(canvas, pos.x, pos.y);
+    pickResolveRef.current(color);
     pickResolveRef.current = null;
     pickCanvasRef.current = null;
     setPickMode(false);
     setPickPreview(null);
-  }, [pickPreview]);
+  }, []);
 
-  const handlePickMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handlePickMove = useCallback(() => {
     const pos = stageRef.current?.getPointerPosition();
     if (!pos || !pickCanvasRef.current) return;
     const color = sampleCanvas(pickCanvasRef.current, pos.x, pos.y);
     setPickPreview({ x: pos.x, y: pos.y, color });
-    e.cancelBubble = true;
   }, []);
 
   const singleFolds = [centerX, centerX + L.faceW];
@@ -180,7 +184,7 @@ export default function DesignEditor({ onExport }: Props) {
           width={CW}
           height={CH}
           onMouseDown={(e) => {
-            if (pickMode) { commitPick(); return; }
+            if (pickMode) return;
             if (e.target === e.target.getStage()) setSelected(false);
           }}
           onTouchStart={(e) => { if (e.target === e.target.getStage()) setSelected(false); }}
@@ -271,7 +275,9 @@ export default function DesignEditor({ onExport }: Props) {
               <Rect x={0} y={0} width={CW} height={CH}
                 fill="transparent" listening
                 onMouseMove={handlePickMove}
-                onClick={commitPick}
+                onTouchMove={handlePickMove}
+                onClick={handlePickCommit}
+                onTap={handlePickCommit}
               />
             )}
             {pickMode && pickPreview && (

@@ -90,21 +90,25 @@ export default function VariantB() {
     });
   }, []);
 
-  const commitPick = useCallback(() => {
-    if (!pickPreview || !pickResolveRef.current) return;
-    pickResolveRef.current(pickPreview.color);
+  const handlePickCommit = useCallback(() => {
+    const stage = stageRef.current;
+    const canvas = pickCanvasRef.current;
+    if (!stage || !canvas || !pickResolveRef.current) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    const color = sampleCanvas(canvas, pos.x, pos.y);
+    pickResolveRef.current(color);
     pickResolveRef.current = null;
     pickCanvasRef.current = null;
     setPickMode(false);
     setPickPreview(null);
-  }, [pickPreview]);
+  }, []);
 
-  const handlePickMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handlePickMove = useCallback(() => {
     const pos = stageRef.current?.getPointerPosition();
     if (!pos || !pickCanvasRef.current) return;
     const color = sampleCanvas(pickCanvasRef.current, pos.x, pos.y);
     setPickPreview({ x: pos.x, y: pos.y, color });
-    e.cancelBubble = true;
   }, []);
 
   const singleFolds = [centerX, centerX + L.fw];
@@ -137,7 +141,7 @@ export default function VariantB() {
       <div style={{ overflowX: "auto", maxWidth: "100%", border: "1px solid #e5e3de", borderRadius: 8 }}>
         <Stage ref={stageRef} width={L.cw} height={L.ch}
           onMouseDown={(e) => {
-            if (pickMode) { commitPick(); return; }
+            if (pickMode) return;
             if (e.target === e.target.getStage()) setSelected(false);
           }}
           style={{ display: "block", cursor: pickMode ? "crosshair" : undefined }}
@@ -192,7 +196,9 @@ export default function VariantB() {
               <Rect x={0} y={0} width={L.cw} height={L.ch}
                 fill="transparent" listening
                 onMouseMove={handlePickMove}
-                onClick={commitPick}
+                onTouchMove={handlePickMove}
+                onClick={handlePickCommit}
+                onTap={handlePickCommit}
               />
             )}
             {pickMode && pickPreview && (
