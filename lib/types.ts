@@ -62,6 +62,19 @@ export interface Order {
   created_at: string;
 }
 
+export interface CustomOrder {
+  id: string;
+  first_name: string;
+  last_name: string | null;
+  phone: string;
+  city: string;
+  quantity: number;
+  notes: string | null;
+  design_url: string;
+  status: OrderStatus;
+  created_at: string;
+}
+
 export interface SubcategoryRecord {
   id: string;
   category_id: string;
