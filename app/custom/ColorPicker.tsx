@@ -62,11 +62,11 @@ export default function ColorPicker({ value, onChange, label = "Background", onE
       {/* Trigger pill */}
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all"
+        className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all w-full"
         style={{
           background: "#f7f5f1",
           border: open ? "1.5px solid #f95c05" : "1.5px solid #e0ddd8",
-          minWidth: 140,
+          minWidth: 80,
           boxShadow: open ? "0 0 0 3px rgba(249,92,5,0.1)" : "none",
         }}
       >

@@ -577,12 +577,12 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
             placeholder="Type your text..."
           />
 
-          <div className="flex gap-2 items-end">
-            {/* Font */}
-            <div className="flex flex-col gap-1.5 flex-1">
+          <div className="flex flex-wrap gap-2 items-end">
+            {/* Font — full row on small screens, flex-1 on larger */}
+            <div className="flex flex-col gap-1.5 w-full sm:flex-1 sm:w-auto">
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#aaa" }}>Font</span>
               <select
-                className="px-3 py-2 text-sm outline-none rounded-lg transition-colors"
+                className="w-full px-3 py-2 text-sm outline-none rounded-lg transition-colors"
                 style={{ background: "#fff", border: "1.5px solid #e0ddd8", fontFamily: "var(--font-barlow)", color: "#333" }}
                 value={panelFont}
                 onChange={e => setPanelFont(e.target.value)}
@@ -594,7 +594,7 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
             </div>
 
             {/* Size */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 shrink-0">
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#aaa" }}>Size</span>
               <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "1.5px solid #e0ddd8", background: "#fff" }}>
                 <button className="px-3 py-2 font-bold transition-colors hover:bg-[#f0eeea]"
@@ -608,7 +608,9 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
             </div>
 
             {/* Text color */}
-            <ColorPicker value={panelColor} onChange={c => setPanelColor(c ?? "#ffffff")} label="Color" />
+            <div className="flex-1 min-w-0">
+              <ColorPicker value={panelColor} onChange={c => setPanelColor(c ?? "#ffffff")} label="Color" />
+            </div>
           </div>
 
           <button
