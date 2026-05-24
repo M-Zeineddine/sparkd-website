@@ -98,6 +98,9 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
   const stageRef = useRef<Konva.Stage>(null);
   const trRef = useRef<Konva.Transformer>(null);
   const initialLayoutRef = useRef(initialLayout);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [canvasScale, setCanvasScale] = useState(1);
 
   const [mode, setMode] = useState<Mode>("single");
   const [images, setImages] = useState<ImageItem[]>([]);
@@ -149,6 +152,16 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
     ).then(items => setImages(items.filter((i): i is ImageItem => i !== null)));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setCanvasScale(Math.min(1, el.offsetWidth / CW));
+    update();
+    const obs = new ResizeObserver(update);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [CW]);
+
   const handleModeChange = useCallback((newMode: Mode) => {
     if (newMode === mode) return;
     const delta = (newMode === "single" ? centerX : L.sideAx) - (mode === "single" ? centerX : L.sideAx);
@@ -188,17 +201,17 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
     setSelectedId(null);
     setShowFolds(false);
     setTimeout(() => {
-      const url = stageRef.current?.toDataURL({ pixelRatio: 2 }) ?? "";
+      const url = stageRef.current?.toDataURL({ pixelRatio: 2 / canvasScale }) ?? "";
       setPreviewUrl(url);
       setShowFolds(true);
     }, 50);
-  }, []);
+  }, [canvasScale]);
 
   const handleExport = useCallback(() => {
     setSelectedId(null);
     setShowFolds(false);
     setTimeout(() => {
-      const dataUrl = stageRef.current?.toDataURL({ pixelRatio: 2 }) ?? "";
+      const dataUrl = stageRef.current?.toDataURL({ pixelRatio: 2 / canvasScale }) ?? "";
       setShowFolds(true);
       onExport({
         dataUrl,
@@ -211,17 +224,17 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
         sourceFiles: images.map(i => i.sourceFile ?? null),
       });
     }, 50);
-  }, [onExport, mode, bgColor, images, texts]);
+  }, [canvasScale, onExport, mode, bgColor, images, texts]);
 
   const pickFromCanvas = useCallback((): Promise<string | null> => {
     if (!stageRef.current) return Promise.resolve(null);
-    pickCanvasRef.current = stageRef.current.toCanvas();
+    pickCanvasRef.current = stageRef.current.toCanvas({ pixelRatio: 1 / canvasScale });
     return new Promise((resolve) => {
       pickResolveRef.current = resolve;
       setPickMode(true);
       setPickPreview(null);
     });
-  }, []);
+  }, [canvasScale]);
 
   const handlePickCommit = useCallback(() => {
     const stage = stageRef.current;
@@ -340,11 +353,13 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
       </div>
 
       {/* Canvas */}
-      <div style={{ overflowX: "auto", maxWidth: "100%", borderRadius: 8, border: "1px solid #e5e3de" }}>
+      <div ref={containerRef} style={{ width: "100%", maxWidth: CW, borderRadius: 8, border: "1px solid #e5e3de", lineHeight: 0 }}>
         <Stage
           ref={stageRef}
-          width={CW}
-          height={CH}
+          width={CW * canvasScale}
+          height={CH * canvasScale}
+          scaleX={canvasScale}
+          scaleY={canvasScale}
           onMouseDown={(e) => {
             if (pickMode) return;
             if (e.target === e.target.getStage()) setSelectedId(null);

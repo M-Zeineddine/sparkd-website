@@ -34,13 +34,16 @@ function warpFromCanvas(
   const ctx = canvas.getContext("2d")!;
   const out = ctx.createImageData(outW, outH);
   const R = outW / 2;
+  // VIEW controls visible arc (0.82 ≈ ±55° from centre)
+  const VIEW = 0.82;
+  const maxTheta = Math.asin(VIEW);
 
   for (let x = 0; x < outW; x++) {
-    const t = (x - R) / R;
-    if (Math.abs(t) >= 1) continue;
+    const t = ((x - R) / R) * VIEW;
     const theta = Math.asin(t);
-    const brightness = Math.cos(theta) * 1.1;
-    const srcX = centerX + (theta / (Math.PI / 2)) * (arcSpan / 2);
+    // Shading: 0.65 at edges → 1.0 at centre
+    const brightness = Math.cos((theta / maxTheta) * (Math.PI / 2)) * 0.35 + 0.65;
+    const srcX = centerX + (theta / maxTheta) * (arcSpan / 2);
 
     for (let y = 0; y < outH; y++) {
       const srcY = (y * ih) / outH;
