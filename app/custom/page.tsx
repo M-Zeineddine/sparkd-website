@@ -68,6 +68,10 @@ export default function CustomPage() {
 
     const fd = new FormData();
     fd.append("design", file);
+    fd.append("design_mode", designExport.layout.mode);
+    fd.append("design_layout", JSON.stringify(designExport.layout));
+    fd.append("image_count", String(designExport.sourceFiles.length));
+    designExport.sourceFiles.forEach((f, i) => { if (f) fd.append(`image_${i}`, f); });
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
 
     const result = await fetch("/api/custom-order", { method: "POST", body: fd });
@@ -173,6 +177,13 @@ export default function CustomPage() {
             </h2>
           </div>
 
+          {/* Keep editor mounted while designing or filling the form — unmount only on done */}
+          {step !== "done" && (
+            <div style={{ display: step === "editor" ? undefined : "none" }}>
+              <DesignEditor onExport={handleDesignExport} />
+            </div>
+          )}
+
           {step === "done" ? (
             <div className="flex flex-col items-center gap-6 py-12 text-center">
               <div
@@ -197,9 +208,7 @@ export default function CustomPage() {
                 {isRTL ? "طلب آخر" : "Place Another Order"}
               </button>
             </div>
-          ) : step === "editor" ? (
-            <DesignEditor onExport={handleDesignExport} />
-          ) : (
+          ) : step === "form" ? (
             /* Form step */
             <div id="order-form" className="flex flex-col gap-8">
               {/* Design preview */}
@@ -343,7 +352,7 @@ export default function CustomPage() {
                 </button>
               </form>
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 

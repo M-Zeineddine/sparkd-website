@@ -492,6 +492,15 @@ export default function AdminDashboard() {
                           <td className="px-4 py-4 text-white/70 whitespace-nowrap" style={{ fontFamily: "var(--font-barlow)" }}>
                             {order.quantity}
                           </td>
+                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <a
+                              href={`/admin/orders/${order.id}/edit`}
+                              className="text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+                              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
+                            >
+                              Edit Design
+                            </a>
+                          </td>
                           <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                             <select
                               value={order.status}

@@ -71,6 +71,8 @@ export interface CustomOrder {
   quantity: number;
   notes: string | null;
   design_url: string;
+  design_mode: string | null;
+  design_layout: Record<string, unknown> | null;
   status: OrderStatus;
   created_at: string;
 }

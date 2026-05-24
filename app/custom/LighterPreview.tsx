@@ -183,7 +183,7 @@ export default function LighterPreview({ dataUrl, onClose, mode }: Props) {
             </div>
             <p className="text-[10px] font-bold uppercase tracking-widest"
               style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-              Side A
+              Front
             </p>
           </div>
 
@@ -203,7 +203,7 @@ export default function LighterPreview({ dataUrl, onClose, mode }: Props) {
             </div>
             <p className="text-[10px] font-bold uppercase tracking-widest"
               style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-              {mode === "single" ? "Back" : "Side B"}
+              Back
             </p>
           </div>
         </div>
