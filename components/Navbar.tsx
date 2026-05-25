@@ -15,7 +15,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const count = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
+  const count = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0) + s.customItems.reduce((sum, i) => sum + i.quantity, 0));
   const toggleCart = useCartStore((s) => s.toggleCart);
 
   useEffect(() => { setMounted(true); }, []);

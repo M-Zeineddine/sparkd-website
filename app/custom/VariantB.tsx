@@ -221,7 +221,7 @@ export default function VariantB() {
       </label>
 
       <p className="text-xs text-center" style={{ fontFamily: "var(--font-barlow)", color: "#aaa", maxWidth: 280 }}>
-        For best print quality, upload a high-resolution image (300 DPI or higher).
+        For best print quality, upload a high-resolution image
       </p>
     </div>
   );

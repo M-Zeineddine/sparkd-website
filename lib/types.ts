@@ -29,6 +29,16 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface CustomCartItem {
+  cartKey: string;
+  specName: string;
+  specSize: "S" | "M" | "L";
+  dataUrl: string;
+  layout: Record<string, unknown>;
+  sourceFiles: Array<File | null>;
+  quantity: number;
+}
+
 export type OrderStatus = "pending" | "confirmed" | "delivered" | "cancelled";
 
 export interface OrderItem {

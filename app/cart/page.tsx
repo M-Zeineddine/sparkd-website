@@ -2,14 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
 import { DEFAULT_SIZES } from "@/lib/constants";
 
+
 export default function CartPage() {
   const { t, isRTL } = useLang();
-  const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCartStore();
+  const { items, removeItem, updateQuantity, totalPrice, clearCart, customItems, removeCustomItem, updateCustomQuantity, customTotalPrice, setEditingCustomKey } = useCartStore();
+  const router = useRouter();
   const total = totalPrice();
+  const customTotal = customTotalPrice();
+  const grandTotal = total + customTotal;
 
   const fontHeading = {
     fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
@@ -32,7 +37,7 @@ export default function CartPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-10">
-        {items.length === 0 ? (
+        {items.length === 0 && customItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-6 text-center">
             <span className="text-8xl">🛒</span>
             <div>
@@ -120,6 +125,46 @@ export default function CartPage() {
                 );
               })}
 
+              {/* Custom items */}
+              {customItems.map((item) => {
+                const unitPrice = DEFAULT_SIZES.find((s) => s.size === item.specSize)?.price ?? 0;
+                const mode = item.layout.mode as string;
+                return (
+                  <div key={item.cartKey} className="flex gap-4 p-4 border border-[#e5e3de] hover:border-[#f95c05] transition-colors">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.dataUrl} alt="Custom design" className="shrink-0 object-cover bg-[#f0ede8]" style={{ width: 96, height: 96 }} />
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div>
+                        <h3 className="font-black text-sm text-[#111]" style={fontHeading}>Custom Lighter</h3>
+                        <p className="text-xs mt-0.5" style={{ ...fontBody, color: "#999" }}>{item.specName} — {mode === "both" ? "Double Sided" : "One Sided"}</p>
+                      </div>
+                      <p className="font-bold" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05", letterSpacing: "0.04em" }}>
+                        ${(unitPrice * item.quantity).toFixed(2)}
+                        <span className="text-[#999] font-normal text-xs ml-1">(${unitPrice.toFixed(2)} ea.)</span>
+                      </p>
+                      <div className="flex items-center gap-3 mt-auto">
+                        <div className="flex items-center border border-[#e5e3de]">
+                          <button onClick={() => updateCustomQuantity(item.cartKey, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-lg hover:bg-[#f0ede8] transition-colors">−</button>
+                          <span className="w-10 text-center text-sm font-bold">{item.quantity}</span>
+                          <button onClick={() => updateCustomQuantity(item.cartKey, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-lg hover:bg-[#f0ede8] transition-colors">+</button>
+                        </div>
+                        <button
+                          onClick={() => { setEditingCustomKey(item.cartKey); router.push("/custom"); }}
+                          className="text-xs font-bold uppercase tracking-widest text-[#999] hover:text-[#f95c05] transition-colors"
+                          style={fontHeading}
+                        >
+                          Edit
+                        </button>
+                        <button onClick={() => removeCustomItem(item.cartKey)} className="text-xs text-[#999] hover:text-red-500 transition-colors flex items-center gap-1" style={fontBody}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M9 6V4h6v2" /></svg>
+                          {t("remove")}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
               <button
                 onClick={clearCart}
                 className="self-start text-xs text-[#999] hover:text-red-500 transition-colors mt-2"
@@ -157,11 +202,8 @@ export default function CartPage() {
 
                 <div className="border-t border-[#e5e3de] pt-4 flex justify-between items-center mb-6">
                   <span className="font-black text-lg" style={fontHeading}>{t("total")}</span>
-                  <span
-                    className="text-2xl font-black"
-                    style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
-                  >
-                    ${total.toFixed(2)}
+                  <span className="text-2xl font-black" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                    ${grandTotal.toFixed(2)}
                   </span>
                 </div>
 

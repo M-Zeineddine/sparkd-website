@@ -2,6 +2,7 @@ import { ProductSize } from "@/lib/types";
 
 export interface LighterSpec {
   name: string;
+  size: "S" | "M" | "L";
   wrapWidth: number;  // cm — total flat wrap width (circumference)
   wrapHeight: number; // cm — wrap height
   faceWidth: number;  // cm — each visible side face width
@@ -10,6 +11,7 @@ export interface LighterSpec {
 export const LIGHTERS: Record<string, LighterSpec> = {
   bic_large: {
     name: "BIC Large",
+    size: "L",
     wrapWidth: 6.5,
     wrapHeight: 6.8,
     faceWidth: 2.6,
@@ -24,6 +26,8 @@ export const LEBANESE_CITIES: string[] = [
   "Kesrwan", "Koura", "Marjayoun", "Metn", "Nabatieh", "Rashaya",
   "Sidon", "Tripoli", "Tyre", "Zahle",
 ];
+
+export const DELIVERY_FEE = 4;
 
 export const BUNDLE_QTY = 3;
 export const BUNDLE_PRICE = 10;

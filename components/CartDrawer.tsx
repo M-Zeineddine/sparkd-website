@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store";
 import { useLang } from "@/lib/i18n";
 import { DEFAULT_SIZES } from "@/lib/constants";
 
 export default function CartDrawer() {
   const { t, isRTL } = useLang();
-  const { items, isOpen, closeCart, removeItem, incrementItem, decrementItem, totalPrice, bundleInfo } =
+  const { items, customItems, isOpen, closeCart, removeItem, incrementItem, decrementItem, updateCustomQuantity, removeCustomItem, setEditingCustomKey, totalPrice, customTotalPrice, bundleInfo } =
     useCartStore();
+  const router = useRouter();
   const total = totalPrice();
+  const customTotal = customTotalPrice();
+  const grandTotal = total + customTotal;
   const { count: bundleCount, savings: bundleSavings } = bundleInfo();
 
   if (!isOpen) return null;
@@ -40,7 +44,7 @@ export default function CartDrawer() {
               textTransform: isRTL ? "none" : "uppercase",
             }}
           >
-            {t("yourCart")} {items.length > 0 && `(${items.reduce((s, i) => s + i.quantity, 0)})`}
+            {t("yourCart")} {(items.length > 0 || customItems.length > 0) && `(${items.reduce((s, i) => s + i.quantity, 0) + customItems.reduce((s, i) => s + i.quantity, 0)})`}
           </h2>
           <button
             onClick={closeCart}
@@ -56,7 +60,7 @@ export default function CartDrawer() {
 
         {/* Items */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {items.length === 0 ? (
+          {items.length === 0 && customItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1cfc9" strokeWidth="1.5">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
@@ -144,12 +148,71 @@ export default function CartDrawer() {
                   </li>
                 );
               })}
+
+              {customItems.map((item) => {
+                const unitPrice = DEFAULT_SIZES.find((s) => s.size === item.specSize)?.price ?? 0;
+                return (
+                  <li key={item.cartKey} className="flex gap-3 pb-4 border-b border-[#e5e3de]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.dataUrl} alt="Custom design" className="w-20 h-20 shrink-0 object-cover" style={{ background: "#f0ede8" }} />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-sm font-bold text-[#111] leading-tight"
+                        style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)", textTransform: isRTL ? "none" : "uppercase" }}
+                      >
+                        Custom Lighter
+                      </p>
+                      <p className="text-[#f95c05] text-sm font-bold mt-0.5" style={{ fontFamily: "var(--font-barlow-condensed)" }}>
+                        ${(unitPrice * item.quantity).toFixed(2)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => updateCustomQuantity(item.cartKey, item.quantity - 1)}
+                          className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
+                        >
+                          −
+                        </button>
+                        <span className="text-sm font-semibold min-w-[20px] text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateCustomQuantity(item.cartKey, item.quantity + 1)}
+                          className="w-6 h-6 flex items-center justify-center border border-[#e5e3de] text-sm hover:border-[#f95c05] transition-colors"
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingCustomKey(item.cartKey);
+                            router.push("/custom");
+                            closeCart();
+                          }}
+                          className="text-[#999] hover:text-[#f95c05] transition-colors text-xs font-bold uppercase tracking-widest"
+                          style={{ fontFamily: "var(--font-barlow-condensed)" }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => removeCustomItem(item.cartKey)}
+                          className="ml-auto text-[#999] hover:text-red-500 transition-colors"
+                          aria-label="Remove"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14H6L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                            <path d="M9 6V4h6v2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
 
         {/* Footer */}
-        {items.length > 0 && (
+        {(items.length > 0 || customItems.length > 0) && (
           <div className="border-t border-[#e5e3de] px-5 py-4 flex flex-col gap-3">
             {bundleCount > 0 && (
               <div
@@ -175,7 +238,7 @@ export default function CartDrawer() {
                 className="text-lg font-bold"
                 style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
               >
-                ${total.toFixed(2)}
+                ${grandTotal.toFixed(2)}
               </span>
             </div>
             <Link href="/checkout" onClick={closeCart}>

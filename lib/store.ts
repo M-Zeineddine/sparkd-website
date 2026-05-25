@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CartItem, Product, ProductSize } from "./types";
+import { CartItem, CustomCartItem, Product, ProductSize } from "./types";
 import { DEFAULT_SIZES, BUNDLE_QTY, BUNDLE_PRICE, BUNDLE_SIZE } from "./constants";
 
 function currentPrice(size: ProductSize): number {
@@ -9,18 +9,26 @@ function currentPrice(size: ProductSize): number {
 
 interface CartStore {
   items: CartItem[];
+  customItems: CustomCartItem[];
   isOpen: boolean;
+  editingCustomKey: string | null;
   addItem: (product: Product, size: ProductSize) => void;
   removeItem: (cartKey: string) => void;
   updateQuantity: (cartKey: string, quantity: number) => void;
   incrementItem: (cartKey: string) => void;
   decrementItem: (cartKey: string) => void;
   clearCart: () => void;
+  addCustomItem: (item: Omit<CustomCartItem, "cartKey">) => void;
+  removeCustomItem: (cartKey: string) => void;
+  updateCustomQuantity: (cartKey: string, quantity: number) => void;
+  clearCustomItems: () => void;
+  setEditingCustomKey: (key: string | null) => void;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
+  customTotalPrice: () => number;
   bundleInfo: () => { count: number; savings: number };
 }
 
@@ -28,7 +36,9 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      customItems: [],
       isOpen: false,
+      editingCustomKey: null,
 
       addItem: (product, size) => {
         const cartKey = `${product.id}-${size.size}`;
@@ -91,11 +101,34 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: () => set({ items: [] }),
+
+      addCustomItem: (item) => {
+        const cartKey = `custom-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        set((state) => ({ customItems: [...state.customItems, { ...item, cartKey }], isOpen: true }));
+      },
+      removeCustomItem: (cartKey) => {
+        set((state) => ({ customItems: state.customItems.filter((i) => i.cartKey !== cartKey) }));
+      },
+      updateCustomQuantity: (cartKey, quantity) => {
+        if (quantity <= 0) { get().removeCustomItem(cartKey); return; }
+        set((state) => ({ customItems: state.customItems.map((i) => i.cartKey === cartKey ? { ...i, quantity } : i) }));
+      },
+      clearCustomItems: () => set({ customItems: [] }),
+      setEditingCustomKey: (key) => set({ editingCustomKey: key }),
+
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 
-      totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+      totalItems: () =>
+        get().items.reduce((sum, i) => sum + i.quantity, 0) +
+        get().customItems.reduce((sum, i) => sum + i.quantity, 0),
+
+      customTotalPrice: () =>
+        get().customItems.reduce((sum, i) => {
+          const price = DEFAULT_SIZES.find((s) => s.size === i.specSize)?.price ?? 0;
+          return sum + price * i.quantity;
+        }, 0),
 
       bundleInfo: () => {
         const largeQty = get().items
@@ -116,8 +149,11 @@ export const useCartStore = create<CartStore>()(
     {
       name: "sparkd-cart",
       version: 2,
-      migrate: () => ({ items: [] }),
-      partialize: (state) => ({ items: state.items }),
+      migrate: () => ({ items: [] as CartItem[], customItems: [] as CustomCartItem[] }),
+      partialize: (state) => ({
+        items: state.items,
+        customItems: state.customItems.map((item) => ({ ...item, sourceFiles: [] as Array<File | null> })),
+      }),
     }
   )
 );

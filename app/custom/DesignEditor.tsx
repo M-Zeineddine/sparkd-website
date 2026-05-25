@@ -73,7 +73,7 @@ function sampleCanvas(canvas: HTMLCanvasElement, x: number, y: number): string {
 export interface DesignLayout {
   mode: Mode;
   bgColor: string | null;
-  images: Array<{ storageUrl?: string; x: number; y: number; w: number; h: number; rotation: number }>;
+  images: Array<{ imgUrl?: string; storageUrl?: string; x: number; y: number; w: number; h: number; rotation: number }>;
   texts: TextItem[];
 }
 
@@ -132,7 +132,7 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
     setMode(layout.mode);
     setBgColor(layout.bgColor);
     setTexts(layout.texts);
-    const toLoad = layout.images.filter(img => img.storageUrl);
+    const toLoad = layout.images.filter(img => img.imgUrl || img.storageUrl);
     if (!toLoad.length) return;
     Promise.all(
       toLoad.map((imgData, i) =>
@@ -146,7 +146,7 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
             x: imgData.x, y: imgData.y, w: imgData.w, h: imgData.h, rotation: imgData.rotation,
           });
           el.onerror = () => resolve(null);
-          el.src = imgData.storageUrl!;
+          el.src = (imgData.imgUrl ?? imgData.storageUrl)!;
         })
       )
     ).then(items => setImages(items.filter((i): i is ImageItem => i !== null)));
@@ -213,14 +213,20 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
     setTimeout(() => {
       const dataUrl = stageRef.current?.toDataURL({ pixelRatio: 2 / canvasScale }) ?? "";
       setShowFolds(true);
+      const layoutImages = images.map(({ storageUrl, img, x, y, w, h, rotation }) => {
+        let imgUrl = storageUrl;
+        if (!imgUrl && img) {
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth;
+          c.height = img.naturalHeight;
+          c.getContext("2d")?.drawImage(img, 0, 0);
+          imgUrl = c.toDataURL();
+        }
+        return { imgUrl, storageUrl, x, y, w, h, rotation };
+      });
       onExport({
         dataUrl,
-        layout: {
-          mode,
-          bgColor,
-          images: images.map(({ storageUrl, x, y, w, h, rotation }) => ({ storageUrl, x, y, w, h, rotation })),
-          texts,
-        },
+        layout: { mode, bgColor, images: layoutImages, texts },
         sourceFiles: images.map(i => i.sourceFile ?? null),
       });
     }, 50);

@@ -169,7 +169,7 @@ export default function LighterPreview({ dataUrl, onClose, mode }: Props) {
           3D Preview
         </p>
 
-        <div className="flex gap-6">
+        <div className="flex gap-14">
           {/* Side A */}
           <div className="flex flex-col items-center gap-2">
             <div style={{ filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.7))" }}>

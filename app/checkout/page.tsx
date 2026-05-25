@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLang } from "@/lib/i18n";
 import { useCartStore } from "@/lib/store";
-import { DEFAULT_SIZES, LEBANESE_CITIES } from "@/lib/constants";
+import { DEFAULT_SIZES, LEBANESE_CITIES, DELIVERY_FEE } from "@/lib/constants";
 
 interface FormData {
   firstName: string;
@@ -26,8 +26,10 @@ interface FormErrors {
 export default function CheckoutPage() {
   const { t, isRTL } = useLang();
   const router = useRouter();
-  const { items, totalPrice, bundleInfo, clearCart } = useCartStore();
+  const { items, totalPrice, bundleInfo, clearCart, customItems, customTotalPrice, clearCustomItems } = useCartStore();
   const total = totalPrice();
+  const customTotal = customTotalPrice();
+  const grandTotal = total + customTotal + DELIVERY_FEE;
   const { count: bundleCount, savings: bundleSavings } = bundleInfo();
 
   const [form, setForm] = useState<FormData>({
@@ -96,36 +98,67 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          first_name: form.firstName,
-          last_name: form.lastName,
-          email: form.email,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
-          building_details: form.buildingDetails,
-          notes: form.notes,
-          items,
-          total,
-          bundle_count: bundleCount,
-          bundle_savings: bundleSavings,
-        }),
-      });
+      // Submit custom items in parallel
+      if (customItems.length > 0) {
+        await Promise.all(customItems.map(async (item) => {
+          const blob = await fetch(item.dataUrl).then(r => r.blob());
+          const fd = new FormData();
+          fd.append("design", new File([blob], "design.png", { type: "image/png" }));
+          fd.append("design_mode", item.layout.mode as string);
+          fd.append("design_layout", JSON.stringify(item.layout));
+          fd.append("image_count", String(item.sourceFiles.filter(Boolean).length));
+          item.sourceFiles.forEach((f, i) => { if (f) fd.append(`image_${i}`, f); });
+          fd.append("first_name", form.firstName);
+          fd.append("last_name", form.lastName);
+          fd.append("phone", form.phone);
+          fd.append("city", form.city);
+          fd.append("quantity", String(item.quantity));
+          fd.append("notes", form.notes);
+          const r = await fetch("/api/custom-order", { method: "POST", body: fd });
+          if (!r.ok) throw new Error("Custom order failed");
+        }));
+      }
 
-      if (!res.ok) throw new Error("Failed");
-      const data = await res.json();
+      // Submit regular items if any
+      let orderNumber: string | null = null;
+      if (items.length > 0) {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: form.firstName,
+            last_name: form.lastName,
+            email: form.email,
+            phone: form.phone,
+            address: form.address,
+            city: form.city,
+            building_details: form.buildingDetails,
+            notes: form.notes,
+            items,
+            total: grandTotal,
+            bundle_count: bundleCount,
+            bundle_savings: bundleSavings,
+          }),
+        });
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        orderNumber = data.order_number;
+      }
+
       clearCart();
-      router.push(`/order-confirmation?order=${data.order_number}`);
+      clearCustomItems();
+      if (orderNumber) {
+        router.push(`/order-confirmation?order=${orderNumber}`);
+      } else {
+        router.push(`/order-confirmation?custom=1`);
+      }
     } catch {
       setSubmitting(false);
       alert(t("error"));
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && customItems.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center" style={{ background: "#fffdf9" }}>
         <span className="text-6xl">🛒</span>
@@ -287,18 +320,10 @@ export default function CheckoutPage() {
                   {items.map(({ cartKey, product, size, quantity }) => (
                     <div key={cartKey} className="flex gap-3 items-start">
                       <div className="relative w-14 h-14 shrink-0 bg-[#f0ede8] overflow-hidden">
-                        <Image
-                          src={product.image_url}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          sizes="56px"
-                        />
+                        <Image src={product.image_url} alt={product.name} fill className="object-cover" sizes="56px" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-[#111] line-clamp-2" style={fontHeading}>
-                          {product.name}
-                        </p>
+                        <p className="text-xs font-bold text-[#111] line-clamp-2" style={fontHeading}>{product.name}</p>
                         <p className="text-xs text-[#999] mt-0.5" style={fontBody}>× {quantity}</p>
                       </div>
                       <span className="text-sm font-bold shrink-0" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
@@ -306,6 +331,22 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                   ))}
+                  {customItems.map((item) => {
+                    const unitPrice = DEFAULT_SIZES.find((s) => s.size === item.specSize)?.price ?? 0;
+                    return (
+                      <div key={item.cartKey} className="flex gap-3 items-start">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.dataUrl} alt="Custom design" className="w-14 h-14 shrink-0 object-cover bg-[#f0ede8]" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-[#111]" style={fontHeading}>Custom Lighter</p>
+                          <p className="text-xs text-[#999] mt-0.5" style={fontBody}>{item.specName} × {item.quantity}</p>
+                        </div>
+                        <span className="text-sm font-bold shrink-0" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                          ${(unitPrice * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {bundleCount > 0 && (
@@ -321,13 +362,15 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                 )}
+                <div className="flex justify-between items-center text-sm py-3 border-t border-[#e5e3de]" style={fontBody}>
+                  <span style={{ color: "#666" }}>{isRTL ? "التوصيل" : "Delivery"}</span>
+                  <span className="font-bold" style={{ color: "#111" }}>${DELIVERY_FEE.toFixed(2)}</span>
+                </div>
+
                 <div className="border-t border-[#e5e3de] pt-4 flex justify-between items-center mb-5">
                   <span className="font-black" style={fontHeading}>{t("total")}</span>
-                  <span
-                    className="text-2xl font-black"
-                    style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}
-                  >
-                    ${total.toFixed(2)}
+                  <span className="text-2xl font-black" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                    ${grandTotal.toFixed(2)}
                   </span>
                 </div>
 

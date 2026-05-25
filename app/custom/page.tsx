@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n";
-import { LEBANESE_CITIES } from "@/lib/constants";
-import type { DesignExport } from "./DesignEditor";
+import { DEFAULT_LIGHTER, DEFAULT_SIZES } from "@/lib/constants";
+import { useCartStore } from "@/lib/store";
+import type { DesignExport, DesignLayout } from "./DesignEditor";
 
 const DesignEditor = dynamic(() => import("./DesignEditor"), { ssr: false });
 
@@ -24,24 +25,32 @@ const STEPS = [
   },
 ];
 
-const EMPTY_FORM = {
-  first_name: "",
-  last_name: "",
-  phone: "",
-  city: "",
-  quantity: "1",
-  notes: "",
-};
-
-type Step = "editor" | "form" | "done";
+type Step = "editor" | "review";
 
 export default function CustomPage() {
   const { isRTL } = useLang();
+  const { addCustomItem, removeCustomItem, customItems, editingCustomKey, setEditingCustomKey } = useCartStore();
   const [step, setStep] = useState<Step>("editor");
   const [designExport, setDesignExport] = useState<DesignExport | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [editingCartKey, setEditingCartKey] = useState<string | null>(null);
+  const [initialLayout, setInitialLayout] = useState<DesignLayout | null>(null);
+  const [editorKey, setEditorKey] = useState(0);
+
+  // Fires on mount (navigating here with editingCustomKey set) AND when already
+  // on this page and the user clicks Edit again from the cart drawer.
+  useEffect(() => {
+    if (!editingCustomKey) return;
+    const item = customItems.find(i => i.cartKey === editingCustomKey);
+    setEditingCartKey(editingCustomKey);
+    setInitialLayout(item ? (item.layout as unknown as DesignLayout) : null);
+    setEditorKey(k => k + 1); // force DesignEditor to remount with new initialLayout
+    setStep("editor");
+    setEditingCustomKey(null);
+  }, [editingCustomKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const spec = DEFAULT_LIGHTER;
+  const unitPrice = DEFAULT_SIZES.find((s) => s.size === spec.size)?.price ?? 0;
 
   const headingStyle = {
     fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow-condensed)",
@@ -50,38 +59,29 @@ export default function CustomPage() {
 
   const handleDesignExport = (d: DesignExport) => {
     setDesignExport(d);
-    setStep("form");
+    setStep("review");
     setTimeout(() => {
       document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddToCart = () => {
     if (!designExport) return;
-    setSubmitting(true);
-    setError("");
-
-    const res = await fetch(designExport.dataUrl);
-    const blob = await res.blob();
-    const file = new File([blob], "design.png", { type: "image/png" });
-
-    const fd = new FormData();
-    fd.append("design", file);
-    fd.append("design_mode", designExport.layout.mode);
-    fd.append("design_layout", JSON.stringify(designExport.layout));
-    fd.append("image_count", String(designExport.sourceFiles.length));
-    designExport.sourceFiles.forEach((f, i) => { if (f) fd.append(`image_${i}`, f); });
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-
-    const result = await fetch("/api/custom-order", { method: "POST", body: fd });
-    if (result.ok) {
-      setStep("done");
-    } else {
-      const data = await result.json();
-      setError(data.error || "Something went wrong. Please try again.");
+    if (editingCartKey) {
+      removeCustomItem(editingCartKey);
+      setEditingCartKey(null);
     }
-    setSubmitting(false);
+    addCustomItem({
+      specName: spec.name,
+      specSize: spec.size,
+      dataUrl: designExport.dataUrl,
+      layout: designExport.layout as unknown as Record<string, unknown>,
+      sourceFiles: designExport.sourceFiles,
+      quantity,
+    });
+    setStep("editor");
+    setDesignExport(null);
+    setQuantity(1);
   };
 
   return (
@@ -177,182 +177,44 @@ export default function CustomPage() {
             </h2>
           </div>
 
-          {/* Keep editor mounted while designing or filling the form — unmount only on done */}
-          {step !== "done" && (
-            <div style={{ display: step === "editor" ? undefined : "none" }}>
-              <DesignEditor onExport={handleDesignExport} />
-            </div>
-          )}
+          {/* Keep editor mounted while reviewing so state is preserved */}
+          <div style={{ display: step === "editor" ? undefined : "none" }}>
+            <DesignEditor key={editorKey} onExport={handleDesignExport} initialLayout={initialLayout ?? undefined} />
+          </div>
 
-          {step === "done" ? (
-            <div className="flex flex-col items-center gap-6 py-12 text-center">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
-                style={{ background: "#f95c05" }}
-              >
-                ✓
-              </div>
-              <h3 className="text-2xl font-black" style={{ ...headingStyle, color: "#111" }}>
-                {isRTL ? "تم استلام طلبك!" : "Order Received!"}
-              </h3>
-              <p className="text-base max-w-sm" style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)", color: "#777" }}>
-                {isRTL
-                  ? "راح نتواصل معك خلال 24 ساعة لتأكيد الطلب والسعر."
-                  : "We'll reach out within 24 hours to confirm your order and pricing."}
+          {step === "review" && designExport && (
+            <div id="order-form" className="flex flex-col items-center gap-6">
+              <p className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                {isRTL ? "تصميمك" : "Your Design"}
               </p>
-              <button
-                className="btn-outline px-6 py-2.5 text-sm"
-                style={{ borderColor: "#111", color: "#111" }}
-                onClick={() => { setStep("editor"); setForm(EMPTY_FORM); setDesignExport(null); }}
-              >
-                {isRTL ? "طلب آخر" : "Place Another Order"}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={designExport.dataUrl} alt="Your custom design" className="rounded border border-[#e5e3de]" style={{ maxWidth: 400, width: "100%" }} />
+              <button className="text-xs font-bold uppercase tracking-widest underline" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#777" }} onClick={() => setStep("editor")}>
+                ← {isRTL ? "تعديل التصميم" : "Edit Design"}
+              </button>
+
+              <div className="w-full max-w-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
+                    {isRTL ? "الكمية" : "Quantity"}
+                  </label>
+                  <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "1.5px solid #e0ddd8", background: "#fff" }}>
+                    <button className="px-3 py-1.5 font-bold hover:bg-[#f0eeea] transition-colors" style={{ color: "#555", fontSize: 16, lineHeight: 1 }} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
+                    <span className="w-10 text-center text-sm font-bold select-none" style={{ fontFamily: "var(--font-barlow)", color: "#333" }}>{quantity}</span>
+                    <button className="px-3 py-1.5 font-bold hover:bg-[#f0eeea] transition-colors" style={{ color: "#555", fontSize: 16, lineHeight: 1 }} onClick={() => setQuantity(q => q + 1)}>+</button>
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm px-1" style={{ fontFamily: "var(--font-barlow)", color: "#555" }}>
+                  <span>{spec.name} × {quantity}</span>
+                  <span className="font-bold" style={{ color: "#111" }}>${(unitPrice * quantity).toFixed(2)}</span>
+                </div>
+              </div>
+
+              <button onClick={handleAddToCart} className="btn-primary px-10 py-3 text-base">
+                {isRTL ? "أضف إلى السلة" : "Add to Cart →"}
               </button>
             </div>
-          ) : step === "form" ? (
-            /* Form step */
-            <div id="order-form" className="flex flex-col gap-8">
-              {/* Design preview */}
-              {designExport && (
-                <div className="flex flex-col items-center gap-3">
-                  <p className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-                    {isRTL ? "تصميمك" : "Your Design"}
-                  </p>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={designExport.dataUrl}
-                    alt="Your custom design"
-                    className="rounded border border-[#e5e3de]"
-                    style={{ maxWidth: 400, width: "100%" }}
-                  />
-                  <button
-                    className="text-xs font-bold uppercase tracking-widest underline"
-                    style={{ fontFamily: "var(--font-barlow-condensed)", color: "#777" }}
-                    onClick={() => setStep("editor")}
-                  >
-                    ← {isRTL ? "تعديل التصميم" : "Edit Design"}
-                  </button>
-                </div>
-              )}
-
-              {/* Contact form */}
-              <div className="flex flex-col gap-3 mb-4 text-center">
-                <span className="text-xs tracking-[0.2em] uppercase font-bold" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-                  {isRTL ? "الخطوة الثانية" : "Step 2"}
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-black" style={{ ...headingStyle, color: "#111" }}>
-                  {isRTL ? "بياناتك" : "Your Details"}
-                </h3>
-              </div>
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4" style={{ direction: isRTL ? "rtl" : "ltr" }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                      {isRTL ? "الاسم الأول *" : "First Name *"}
-                    </label>
-                    <input
-                      className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors"
-                      style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                      value={form.first_name}
-                      onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                      {isRTL ? "اسم العائلة" : "Last Name"}
-                    </label>
-                    <input
-                      className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors"
-                      style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                      value={form.last_name}
-                      onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                      {isRTL ? "رقم الهاتف *" : "Phone *"}
-                    </label>
-                    <input
-                      type="tel"
-                      className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors"
-                      style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                      placeholder="+961 XX XXX XXX"
-                      value={form.phone}
-                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                      {isRTL ? "المدينة *" : "City *"}
-                    </label>
-                    <select
-                      className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors"
-                      style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                      value={form.city}
-                      onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                      required
-                    >
-                      <option value="">{isRTL ? "اختر مدينة" : "Select city"}</option>
-                      {LEBANESE_CITIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                    {isRTL ? "الكمية *" : "Quantity *"}
-                  </label>
-                  <select
-                    className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors"
-                    style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                    value={form.quantity}
-                    onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                  >
-                    {[1, 2, 3, 5, 10, 15, 20].map((n) => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#555" }}>
-                    {isRTL ? "ملاحظات" : "Notes"}
-                  </label>
-                  <textarea
-                    rows={3}
-                    className="border border-[#e5e3de] px-4 py-3 text-sm outline-none focus:border-[#f95c05] transition-colors resize-none"
-                    style={{ background: "#fffdf9", fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}
-                    placeholder={isRTL ? "أي تفاصيل إضافية..." : "Any extra details..."}
-                    value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-sm text-red-600" style={{ fontFamily: isRTL ? "var(--font-cairo)" : "var(--font-barlow)" }}>
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary py-4 text-base disabled:opacity-60"
-                >
-                  {submitting
-                    ? (isRTL ? "جارٍ الإرسال..." : "Submitting...")
-                    : (isRTL ? "إرسال الطلب" : "Submit Order")}
-                </button>
-              </form>
-            </div>
-          ) : null}
+          )}
         </div>
       </section>
 
