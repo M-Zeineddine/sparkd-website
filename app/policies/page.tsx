@@ -80,7 +80,6 @@ export default function PoliciesPage() {
               { label: isRTL ? "التغطية" : "Coverage", body: isRTL ? "نوصّل لجميع المدن والمناطق في لبنان." : "We deliver to all cities and towns across Lebanon." },
               { label: isRTL ? "المدة" : "Timeframe", body: isRTL ? "يُسلَّم الطلب خلال ١–٥ أيام عمل بعد التأكيد." : "Orders are delivered within 1–5 business days after confirmation." },
               { label: isRTL ? "الرسوم" : "Fee", body: isRTL ? `رسوم التوصيل ثابتة بقيمة $${DELIVERY_FEE.toFixed(2)} على كل طلب، بغض النظر عن الكمية.` : `A flat $${DELIVERY_FEE.toFixed(2)} delivery fee applies to every order, regardless of size or quantity.` },
-              { label: isRTL ? "التتبع" : "Tracking", body: isRTL ? "بعد شحن طلبك، سيتواصل فريقنا معك عبر الهاتف لتنسيق التسليم." : "Once your order ships, our team will reach out via phone to coordinate delivery." },
             ] as { label: string; body: string }[]).map(r => <Row key={r.label} {...r} fontBody={fontBody} isRTL={isRTL} />)}
           </div>
 

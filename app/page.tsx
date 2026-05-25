@@ -6,6 +6,7 @@ import { useLang } from "@/lib/i18n";
 import { Product, CategoryRecord } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 import SparkdLogo from "@/components/SparkdLogo";
+import ReviewsCarousel from "@/components/ReviewsCarousel";
 
 const COLLECTION_ICONS: Record<string, React.ReactNode> = {
   "Anime & Manga": (
@@ -241,6 +242,9 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ── Reviews ── */}
+      <ReviewsCarousel />
 
       {/* ── Custom Designs ── */}
       <section className="py-20 px-4" style={{ background: "#fffdf9", borderTop: "4px solid #f95c05" }}>
