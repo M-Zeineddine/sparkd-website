@@ -191,7 +191,7 @@ export default function CartDrawer() {
                           Edit
                         </button>
                         <button
-                          onClick={() => removeCustomItem(item.cartKey)}
+                          onClick={() => { if (window.confirm("Remove this custom design from your cart?")) removeCustomItem(item.cartKey); }}
                           className="ml-auto text-[#999] hover:text-red-500 transition-colors"
                           aria-label="Remove"
                         >

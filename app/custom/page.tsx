@@ -47,6 +47,7 @@ export default function CustomPage() {
     setEditorKey(k => k + 1); // force DesignEditor to remount with new initialLayout
     setStep("editor");
     setEditingCustomKey(null);
+    setTimeout(() => document.getElementById("design-tool")?.scrollIntoView({ behavior: "smooth" }), 100);
   }, [editingCustomKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const spec = DEFAULT_LIGHTER;
@@ -189,7 +190,7 @@ export default function CustomPage() {
               </p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={designExport.dataUrl} alt="Your custom design" className="rounded border border-[#e5e3de]" style={{ maxWidth: 400, width: "100%" }} />
-              <button className="text-xs font-bold uppercase tracking-widest underline" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#777" }} onClick={() => setStep("editor")}>
+              <button className="text-xs font-bold uppercase tracking-widest underline" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#777" }} onClick={() => { setStep("editor"); setTimeout(() => document.getElementById("design-tool")?.scrollIntoView({ behavior: "smooth" }), 50); }}>
                 ← {isRTL ? "تعديل التصميم" : "Edit Design"}
               </button>
 

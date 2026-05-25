@@ -27,10 +27,15 @@ const checkerStyle: React.CSSProperties = {
 export default function ColorPicker({ value, onChange, label = "Background", onEyeDrop }: Props) {
   const [open, setOpen] = useState(false);
   const [picking, setPicking] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setAlignRight(rect.left + 224 > window.innerWidth - 16);
+    }
     const handler = (e: MouseEvent) => {
       if (picking) return;
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
@@ -104,7 +109,7 @@ export default function ColorPicker({ value, onChange, label = "Background", onE
             boxShadow: "0 16px 48px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.06)",
             width: 224,
             bottom: "calc(100% + 8px)",
-            left: 0,
+            ...(alignRight ? { right: 0 } : { left: 0 }),
           }}
         >
           <div style={{ borderRadius: 8, overflow: "hidden" }}>

@@ -99,6 +99,7 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
   const trRef = useRef<Konva.Transformer>(null);
   const initialLayoutRef = useRef(initialLayout);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const [canvasScale, setCanvasScale] = useState(1);
 
@@ -373,9 +374,9 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
           style={{ display: "block", cursor: pickMode ? "crosshair" : undefined }}
         >
           <Layer>
-            <Rect x={0} y={0} width={CW} height={CH} fill="#ffffff" />
+            <Rect x={0} y={0} width={CW} height={CH} fill="#ffffff" onClick={() => setSelectedId(null)} onTap={() => setSelectedId(null)} />
 
-            {bgColor && <Rect x={0} y={0} width={CW} height={CH} fill={bgColor} />}
+            {bgColor && <Rect x={0} y={0} width={CW} height={CH} fill={bgColor} onClick={() => setSelectedId(null)} onTap={() => setSelectedId(null)} />}
 
 
             {images.length === 0 && texts.length === 0 && <>
