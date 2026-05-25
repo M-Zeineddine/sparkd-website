@@ -34,9 +34,9 @@ export const BUNDLE_PRICE = 10;
 export const BUNDLE_SIZE = "L";
 
 export const DEFAULT_SIZES: ProductSize[] = [
-  { size: "S", label: "Small",  price: 3,   available: false },
-  { size: "M", label: "Medium", price: 3.5, available: false },
-  { size: "L", label: "Large",  price: 4,   available: true },
+  { size: "S", label: "Small",  price: 2.8, available: true },
+  { size: "M", label: "Medium", price: 3.3, available: true },
+  { size: "L", label: "Large",  price: 3.9, available: true },
 ];
 
 // Merge DB sizes (availability only) with DEFAULT_SIZES (prices).
@@ -47,7 +47,7 @@ export function mergeSizes(dbSizes?: ProductSize[]): ProductSize[] {
     return {
       ...def,
       price: db?.price ?? def.price,
-      available: db?.available ?? def.available,
+      available: def.available, // constants control global size availability
     };
   });
 }
