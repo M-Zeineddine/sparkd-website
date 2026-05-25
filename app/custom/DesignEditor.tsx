@@ -326,14 +326,9 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="flex flex-col items-center gap-1">
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-          {spec.name} — {spec.wrapWidth}×{spec.wrapHeight} cm
-        </p>
-        <p className="text-sm text-center max-w-md" style={{ color: "#777", fontFamily: "var(--font-barlow)" }}>
-          Orange lines are fold lines. Drag and resize your image to position it on the wrap.
-        </p>
-      </div>
+      <p className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+        {spec.name} — {spec.wrapWidth}×{spec.wrapHeight} cm
+      </p>
 
       {/* Mode toggle */}
       <div className="flex gap-1 p-1" style={{ background: "#f0eeea", borderRadius: 6 }}>
@@ -351,6 +346,10 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
           </button>
         ))}
       </div>
+
+      <p className="text-sm text-center max-w-md" style={{ color: "#777", fontFamily: "var(--font-barlow)" }}>
+        Orange lines are fold lines. Drag and resize your image to position it on the wrap.
+      </p>
 
       {/* Canvas */}
       <div ref={containerRef} style={{ width: "100%", maxWidth: CW, borderRadius: 8, border: "1px solid #e5e3de", lineHeight: 0 }}>
@@ -527,22 +526,33 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
           <ColorPicker value={bgColor} onChange={setBgColor} onEyeDrop={pickFromCanvas} label="Background" />
         </div>
 
-        {/* Selected image row */}
-        {isSelectedImage && (
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #e5e3de" }}>
-            <span className="text-[11px] font-black uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
-              Image Selected
+        {/* Add image row */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #e5e3de" }}>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: isSelectedImage ? "#f95c05" : "#bbb" }}>
+              {isSelectedImage ? "Image Selected" : images.length > 0 ? `${images.length} Image${images.length > 1 ? "s" : ""}` : "Image"}
             </span>
-            <button
-              onClick={() => { setImages(imgs => imgs.filter(i => i.id !== selectedId)); setSelectedId(null); }}
-              className="text-[11px] font-bold uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-barlow-condensed)", color: "#e53e3e" }}
-            >
-              Remove
-            </button>
+            {images.length > 0 && !isSelectedImage && (
+              <span className="text-[10px]" style={{ fontFamily: "var(--font-barlow)", color: "#bbb" }}>Tap an image to select it</span>
+            )}
           </div>
-        )}
+          <div className="flex items-center gap-3">
+            {isSelectedImage && (
+              <button
+                onClick={() => { setImages(imgs => imgs.filter(i => i.id !== selectedId)); setSelectedId(null); }}
+                className="text-[11px] font-bold uppercase tracking-widest"
+                style={{ fontFamily: "var(--font-barlow-condensed)", color: "#e53e3e" }}
+              >
+                Remove
+              </button>
+            )}
+            <label className="cursor-pointer px-4 py-1.5 text-[11px] font-black uppercase tracking-widest rounded-lg transition-colors"
+              style={{ fontFamily: "var(--font-barlow-condensed)", background: "#111", color: "#fff" }}>
+              {images.length > 0 ? "+ Add Another" : "+ Add Image"}
+              <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+            </label>
+          </div>
+        </div>
 
         {/* Text section */}
         <div className="flex flex-col gap-4 px-5 py-4">
@@ -562,20 +572,27 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
             )}
           </div>
 
-          <input
-            className="w-full px-3 py-2.5 text-sm outline-none transition-colors rounded-lg"
-            style={{
-              background: "#fff",
-              border: "1.5px solid #e0ddd8",
-              fontFamily: "var(--font-barlow)",
-              color: "#111",
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = "#f95c05"}
-            onBlur={e => e.currentTarget.style.borderColor = "#e0ddd8"}
-            value={panelText}
-            onChange={e => setPanelText(e.target.value)}
-            placeholder="Type your text..."
-          />
+          <div className="relative">
+            <input
+              className="w-full px-3 py-2.5 text-sm outline-none transition-colors rounded-lg"
+              style={{
+                background: "#fff",
+                border: "1.5px solid #e0ddd8",
+                fontFamily: "var(--font-barlow)",
+                color: "#111",
+              }}
+              onFocus={e => e.currentTarget.style.borderColor = "#f95c05"}
+              onBlur={e => e.currentTarget.style.borderColor = "#e0ddd8"}
+              value={panelText}
+              onChange={e => setPanelText(e.target.value)}
+              placeholder="Type your text..."
+              maxLength={50}
+            />
+            <span className="absolute right-2.5 bottom-2.5 text-[10px] select-none pointer-events-none"
+              style={{ fontFamily: "monospace", color: panelText.length >= 45 ? "#e53e3e" : "#ccc" }}>
+              {panelText.length}/50
+            </span>
+          </div>
 
           <div className="flex flex-wrap gap-2 items-end">
             {/* Font — full row on small screens, flex-1 on larger */}
@@ -624,16 +641,8 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
         </div>
       </div>
 
-      <div className="flex gap-3 flex-wrap justify-center">
-        <label
-          className="cursor-pointer px-6 py-2.5 text-sm font-bold uppercase tracking-widest border-2 transition-colors"
-          style={{ fontFamily: "var(--font-barlow-condensed)", borderColor: "#111", color: "#111" }}
-        >
-          Add Image
-          <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-        </label>
-
-        {hasContent && (
+      {hasContent && (
+        <div className="flex gap-3 flex-wrap justify-center">
           <button
             onClick={handlePreview}
             className="px-6 py-2.5 text-sm font-bold uppercase tracking-widest border-2 transition-colors"
@@ -641,20 +650,18 @@ export default function DesignEditor({ spec = DEFAULT_LIGHTER, onExport, initial
           >
             Preview on Lighter
           </button>
-        )}
-        {hasContent && (
           <button className="btn-primary px-8 py-2.5 text-sm" onClick={handleExport}>
             Use This Design →
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {previewUrl && (
         <LighterPreview dataUrl={previewUrl} mode={mode} onClose={() => setPreviewUrl(null)} />
       )}
 
       <p className="text-xs text-center" style={{ fontFamily: "var(--font-barlow)", color: "#aaa", maxWidth: 300 }}>
-        For best print quality, upload a high-resolution image (300 DPI or higher).
+        For best print quality, upload a high-resolution image.
       </p>
     </div>
   );
