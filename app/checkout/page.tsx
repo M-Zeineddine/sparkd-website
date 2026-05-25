@@ -295,14 +295,33 @@ export default function CheckoutPage() {
               </div>
 
               {/* COD Notice */}
-              <div
-                className="flex items-center gap-3 p-4 border-2 border-[#f95c05]"
-              >
+              <div className="flex items-center gap-3 p-4 border-2 border-[#f95c05]">
                 <span className="text-2xl">💵</span>
                 <div style={fontBody}>
                   <span className="font-bold text-[#111] block">{t("cod")}</span>
                   <span className="text-sm text-[#666]">{t("codNote")}</span>
                 </div>
+              </div>
+
+              {/* Delivery info strip */}
+              <div className="flex flex-col gap-2.5 p-4" style={{ background: "#f5f3ef", border: "1.5px solid #e5e3de" }}>
+                <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm" style={fontBody}>
+                  <span className="flex items-center gap-1.5 text-[#555]">
+                    <span>🚚</span>
+                    {isRTL ? "١–٥ أيام عمل" : "1–5 business days"}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[#555]">
+                    <span>📍</span>
+                    {isRTL ? "كل لبنان" : "All of Lebanon"}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[#555]">
+                    <span>🔄</span>
+                    {isRTL ? "استبدال أو استرداد إذا وصل تالفًا" : "Refund or replacement if damaged"}
+                  </span>
+                </div>
+                <Link href="/policies" className="text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "var(--font-barlow-condensed)", color: "#f95c05" }}>
+                  {isRTL ? "سياسة التوصيل الكاملة ←" : "Full delivery & returns policy →"}
+                </Link>
               </div>
             </div>
 
