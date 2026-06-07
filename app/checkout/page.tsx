@@ -29,8 +29,8 @@ export default function CheckoutPage() {
   const { items, totalPrice, bundleInfo, clearCart, customItems, customTotalPrice, clearCustomItems } = useCartStore();
   const total = totalPrice();
   const customTotal = customTotalPrice();
-  const grandTotal = total + customTotal + DELIVERY_FEE;
   const { count: bundleCount, savings: bundleSavings } = bundleInfo();
+  const grandTotal = total + customTotal - bundleSavings + DELIVERY_FEE;
 
   const [form, setForm] = useState<FormData>({
     firstName: "",
@@ -88,7 +88,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0) return;
+    if (items.length === 0 && customItems.length === 0) return;
 
     const errs = validate();
     if (Object.keys(errs).length > 0) {

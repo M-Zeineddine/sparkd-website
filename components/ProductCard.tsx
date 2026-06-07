@@ -20,13 +20,15 @@ export default function ProductCard({ product }: Props) {
   const name = lang === "ar" ? product.name_ar || product.name : product.name;
 
   const inStock = product.in_stock !== false;
-  const availableSize = mergeSizes(product.sizes).find((s) => s.available) ?? mergeSizes(product.sizes)[0];
+  const sizes = mergeSizes(product.sizes);
+  const defaultSize = sizes.find((s) => s.available && s.size === "L") ?? sizes.find((s) => s.available) ?? sizes[0];
+  const minPrice = Math.min(...sizes.filter((s) => s.available).map((s) => s.price));
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!inStock) return;
-    addItem(product, availableSize);
+    addItem(product, defaultSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
@@ -87,7 +89,7 @@ export default function ProductCard({ product }: Props) {
             className="text-[#f95c05] font-bold text-sm mb-3"
             style={{ fontFamily: "var(--font-barlow-condensed)", textTransform: "uppercase", letterSpacing: "0.04em" }}
           >
-            ${Number(availableSize.price).toFixed(2)}
+            From ${minPrice.toFixed(2)}
           </p>
 
           <button

@@ -14,8 +14,8 @@ export default function CartDrawer() {
   const router = useRouter();
   const total = totalPrice();
   const customTotal = customTotalPrice();
-  const grandTotal = total + customTotal;
   const { count: bundleCount, savings: bundleSavings } = bundleInfo();
+  const grandTotal = total + customTotal - bundleSavings;
 
   if (!isOpen) return null;
 

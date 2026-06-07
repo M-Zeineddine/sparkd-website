@@ -131,20 +131,21 @@ export const useCartStore = create<CartStore>()(
         }, 0),
 
       bundleInfo: () => {
-        const largeQty = get().items
+        const regularLargeQty = get().items
           .filter((i) => i.size.size === BUNDLE_SIZE)
           .reduce((sum, i) => sum + i.quantity, 0);
+        const customLargeQty = get().customItems
+          .filter((i) => i.specSize === BUNDLE_SIZE)
+          .reduce((sum, i) => sum + i.quantity, 0);
+        const largeQty = regularLargeQty + customLargeQty;
         const count = Math.floor(largeQty / BUNDLE_QTY);
-        const largePrice = DEFAULT_SIZES.find((s) => s.size === BUNDLE_SIZE)?.price ?? 4;
+        const largePrice = DEFAULT_SIZES.find((s) => s.size === BUNDLE_SIZE)?.price ?? 3.9;
         const savings = count * (BUNDLE_QTY * largePrice - BUNDLE_PRICE);
         return { count, savings };
       },
 
-      totalPrice: () => {
-        const subtotal = get().items.reduce((sum, i) => sum + currentPrice(i.size) * i.quantity, 0);
-        const { savings } = get().bundleInfo();
-        return subtotal - savings;
-      },
+      totalPrice: () =>
+        get().items.reduce((sum, i) => sum + currentPrice(i.size) * i.quantity, 0),
     }),
     {
       name: "sparkd-cart",
@@ -152,7 +153,20 @@ export const useCartStore = create<CartStore>()(
       migrate: () => ({ items: [] as CartItem[], customItems: [] as CustomCartItem[] }),
       partialize: (state) => ({
         items: state.items,
-        customItems: state.customItems.map((item) => ({ ...item, sourceFiles: [] as Array<File | null> })),
+        customItems: state.customItems.map((item) => ({
+          ...item,
+          sourceFiles: [] as Array<File | null>,
+          // Strip per-image base64 (imgUrl) to stay within localStorage limits.
+          // storageUrl (Supabase) and position data are kept for re-edit context.
+          layout: {
+            ...item.layout,
+            images: Array.isArray(item.layout.images)
+              ? (item.layout.images as Array<Record<string, unknown>>).map(
+                  ({ imgUrl: _dropped, ...rest }) => rest
+                )
+              : item.layout.images,
+          },
+        })),
       }),
     }
   )
