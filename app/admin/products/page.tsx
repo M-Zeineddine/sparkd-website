@@ -100,7 +100,7 @@ export default function AdminProducts() {
     setForm((f) => ({ ...f, category: cat, subcategory: "" }));
   };
 
-  const resizeImage = (file: File, maxPx = 800): Promise<Blob> =>
+  const resizeImage = (file: File, maxPx = 1600): Promise<Blob> =>
     new Promise((resolve, reject) => {
       const img = new window.Image();
       img.onload = () => {
@@ -111,7 +111,7 @@ export default function AdminProducts() {
         canvas.width = w;
         canvas.height = h;
         canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
-        canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas failed")), "image/jpeg", 0.88);
+        canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas failed")), "image/jpeg", 0.92);
       };
       img.onerror = reject;
       img.src = URL.createObjectURL(file);
